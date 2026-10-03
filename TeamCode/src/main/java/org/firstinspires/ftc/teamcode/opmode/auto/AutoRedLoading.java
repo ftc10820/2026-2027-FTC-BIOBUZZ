@@ -1,4 +1,17 @@
 package org.firstinspires.ftc.teamcode.opmode.auto;
 
-public class AutoRedLoading {
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+
+import org.firstinspires.ftc.teamcode.opmode.InitOpMode;
+
+@Autonomous(name="Basic: Iterative OpMode", group = "Iterative OpMode")
+public class AutoRedLoading extends InitOpMode{
+    public void runOpMode() {
+        initialize();
+        waitForStart();
+        while(opModeIsActive()) {
+            //TODO
+        }
+    }
 }
+
