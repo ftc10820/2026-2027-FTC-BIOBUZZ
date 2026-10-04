@@ -23,8 +23,7 @@ public abstract class InitOpMode extends LinearOpMode {
         backRightDrive = hardwareMap.get(DcMotor.class, "back_right_drive");
         intakeMotor = hardwareMap.get(DcMotor.class, "intakeMotor");
 
-
-        // Directions match the wheel rotation observed during the robot's forward test.
+        // Based on the forward test; verify each name maps to the correct physical wheel.
         frontLeftDrive.setDirection(DcMotor.Direction.REVERSE);
         frontRightDrive.setDirection(DcMotor.Direction.FORWARD);
         backLeftDrive.setDirection(DcMotor.Direction.FORWARD);
