@@ -6,6 +6,7 @@ public class AutoBlueLoading extends InitOpMode {
     public void runOpMode() {
         initialize();
         waitForStart();
-        while(opModeIsActive()){
+        while (opModeIsActive()) {
+        }
     }
 }
