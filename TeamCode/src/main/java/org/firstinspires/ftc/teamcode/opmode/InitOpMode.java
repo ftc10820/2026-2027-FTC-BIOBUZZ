@@ -30,6 +30,8 @@ public abstract class InitOpMode extends LinearOpMode {
         frontLeftDrive.setDirection(DcMotor.Direction.REVERSE);
 
         System.out.println("Drive motors initialized");
+        telemetry.addLine("Drive motors initialized");
+        telemetry.update();
 
     }
 }
