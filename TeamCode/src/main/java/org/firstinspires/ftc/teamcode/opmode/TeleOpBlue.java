@@ -34,59 +34,23 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 // Drive loop copied from the FTC SDK sample BasicOmniOpMode_Linear.
 // Uses our shared hardware initialization and adds the requested intake control.
 @TeleOp(name="TeleOp Blue", group="FTC10820")
-public class TeleOpBlue extends InitOpMode {
+public class TeleOpBlue extends TeleOpMode {
     @Override
     public void runOpMode() {
         initialize();
 
         waitForStart();
-
-        while (opModeIsActive()) {
-            double max;
-
-            // POV Mode uses left joystick to go forward & strafe, and right joystick to rotate.
-            double axial   = -gamepad1.left_stick_y;  // Note: pushing stick forward gives negative value
-            double lateral =  gamepad1.left_stick_x;
-            double yaw     =  gamepad1.right_stick_x;
-
-            // Combine the joystick requests for each axis-motion to determine each wheel's power.
-            // Set up a variable for each drive wheel.
-            double frontLeftPower  = axial + lateral + yaw;
-            double frontRightPower = axial - lateral - yaw;
-            double backLeftPower   = axial - lateral + yaw;
-            double backRightPower  = axial + lateral - yaw;
-
-            // Normalize the values so no wheel power exceeds 100%
-            // This ensures that the robot maintains the desired motion.
-            max = Math.max(Math.abs(frontLeftPower), Math.abs(frontRightPower));
-            max = Math.max(max, Math.abs(backLeftPower));
-            max = Math.max(max, Math.abs(backRightPower));
-
-            if (max > 1.0) {
-                frontLeftPower  /= max;
-                frontRightPower /= max;
-                backLeftPower   /= max;
-                backRightPower  /= max;
+        try {
+            while (opModeIsActive()) {
+                try {
+                    doManualDrive();
+                    doManualIntake();
+                } catch (Exception ex) {
+                    // TODO: Try to recover from error without exiting loop
+                }
             }
-
-            // Send calculated power to wheels
-            frontLeftDrive.setPower(frontLeftPower);
-            frontRightDrive.setPower(frontRightPower);
-            backLeftDrive.setPower(backLeftPower);
-            backRightDrive.setPower(backRightPower);
-
-            // FTC RobotTeleopPOV_Linear motor on/off pattern, adapted to our intake.
-            if (gamepad1.right_trigger > 0.0)
-                intakeMotor.setPower(1.0);
-            else
-                intakeMotor.setPower(0.0);
-
+        } finally {
+            endOpMode();
         }
-
-        frontLeftDrive.setPower(0.0);
-        frontRightDrive.setPower(0.0);
-        backLeftDrive.setPower(0.0);
-        backRightDrive.setPower(0.0);
-        intakeMotor.setPower(0.0);
     }
 }
