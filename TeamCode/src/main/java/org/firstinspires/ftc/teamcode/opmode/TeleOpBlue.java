@@ -75,8 +75,10 @@ public class TeleOpBlue extends InitOpMode {
             backLeftDrive.setPower(backLeftPower);
             backRightDrive.setPower(backRightPower);
 
-            // FTC RobotTeleopPOV_Linear motor on/off pattern, adapted to our intake.
-            if (gamepad1.right_trigger > 0.0)
+            // Hold left trigger to reverse or right trigger to run forward; reverse has priority.
+            if (gamepad1.left_trigger > 0.0)
+                intakeMotor.setPower(-1.0);
+            else if (gamepad1.right_trigger > 0.0)
                 intakeMotor.setPower(1.0);
             else
                 intakeMotor.setPower(0.0);
