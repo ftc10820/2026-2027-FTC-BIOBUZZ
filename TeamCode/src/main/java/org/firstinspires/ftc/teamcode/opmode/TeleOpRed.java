@@ -34,8 +34,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 // Drive loop copied from the FTC SDK sample BasicOmniOpMode_Linear.
 // Uses our shared hardware initialization and adds the requested intake control.
 @TeleOp(name="TeleOp Red", group="FTC10820")
-public class
-TeleOpRed extends InitOpMode {
+public class TeleOpRed extends InitOpMode {
     @Override
     public void runOpMode() {
         initialize();
