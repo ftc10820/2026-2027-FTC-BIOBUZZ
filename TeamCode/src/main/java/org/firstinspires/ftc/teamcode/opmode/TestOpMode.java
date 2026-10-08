@@ -10,25 +10,25 @@ public class TestOpMode extends InitOpMode{
         initialize();
         waitForStart();
         while (opModeIsActive()) {
-            if (gamepad1.dpad_up) frontRightDrive.setPower(1.0);
-            if (gamepad1.dpad_down) frontRightDrive.setPower(0.0);
+            if (gamepad1.dpad_up) rightFront.setPower(1.0);
+            if (gamepad1.dpad_down) rightFront.setPower(0.0);
 
-            if (gamepad1.dpad_left) frontLeftDrive.setPower(1.0);
-            if (gamepad1.dpad_right) frontLeftDrive.setPower(0.0);
+            if (gamepad1.dpad_left) leftFront.setPower(1.0);
+            if (gamepad1.dpad_right) leftFront.setPower(0.0);
 
-            if (gamepad2.dpad_up) backRightDrive.setPower(1.0);
-            if (gamepad2.dpad_down) backRightDrive.setPower(0.0);
+            if (gamepad2.dpad_up) rightBack.setPower(1.0);
+            if (gamepad2.dpad_down) rightBack.setPower(0.0);
 
-            if (gamepad2.dpad_left) backLeftDrive.setPower(1.0);
-            if (gamepad2.dpad_right) backLeftDrive.setPower(0.0);
+            if (gamepad2.dpad_left) leftBack.setPower(1.0);
+            if (gamepad2.dpad_right) leftBack.setPower(0.0);
 
             if (gamepad2.left_bumper) intakeMotor.setPower(1.0);
             if (gamepad2.right_bumper) intakeMotor.setPower(0.0);
         }
-        frontRightDrive.setPower(0.0);
-        frontLeftDrive.setPower(0.0);
-        backRightDrive.setPower(0.0);
-        backLeftDrive.setPower(0.0);
+        rightFront.setPower(0.0);
+        leftFront.setPower(0.0);
+        rightBack.setPower(0.0);
+        leftBack.setPower(0.0);
         intakeMotor.setPower(0.0);
     }
 }
