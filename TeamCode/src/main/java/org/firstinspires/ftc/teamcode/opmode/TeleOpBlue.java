@@ -32,12 +32,15 @@ package org.firstinspires.ftc.teamcode.opmode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 // Drive loop copied from the FTC SDK sample BasicOmniOpMode_Linear.
-// Uses our shared hardware initialization and adds the requested intake control.
+// Uses our shared hardware initialization and adds intake and shooter controls.
 @TeleOp(name="TeleOp Blue", group="FTC10820")
 public class TeleOpBlue extends InitOpMode {
     @Override
     public void runOpMode() {
         initialize();
+
+        boolean shooterRunning = false;
+        boolean leftBumperWasPressed = false;
 
         waitForStart();
 
@@ -83,6 +86,17 @@ public class TeleOpBlue extends InitOpMode {
             else
                 intakeMotor.setPower(0.0);
 
+            // Toggle once per press, even when the bumper is held down.
+            boolean leftBumperPressed = gamepad1.left_bumper;
+            if (leftBumperPressed && !leftBumperWasPressed) {
+                shooterRunning = !shooterRunning;
+            }
+            leftBumperWasPressed = leftBumperPressed;
+
+            if (shooterMotor != null) {
+                shooterMotor.setVelocity(shooterRunning ? SHOOTER_TARGET_TICKS_PER_SECOND : 0.0);
+            }
+
         }
 
         leftFront.setPower(0.0);
@@ -90,5 +104,8 @@ public class TeleOpBlue extends InitOpMode {
         leftBack.setPower(0.0);
         rightBack.setPower(0.0);
         intakeMotor.setPower(0.0);
+        if (shooterMotor != null) {
+            shooterMotor.setVelocity(0.0);
+        }
     }
 }
