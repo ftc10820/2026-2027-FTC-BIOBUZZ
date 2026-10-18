@@ -33,6 +33,9 @@ import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 // Drive loop copied from the FTC SDK sample BasicOmniOpMode_Linear.
 // Uses our shared hardware initialization and adds intake and shooter controls.
 @TeleOp(name="TeleOp Red", group="FTC10820")
@@ -47,34 +50,37 @@ public class TeleOpRed extends InitOpMode {
         waitForStart();
 
         while (opModeIsActive()) {
-            double max;
+            try {
+                double max;
 
-            // POV Mode uses left joystick to go forward & strafe, and right joystick to rotate.
-            double axial   = -gamepad1.left_stick_y;  // Note: pushing stick forward gives negative value
-            double lateral =  gamepad1.left_stick_x;
-            double yaw     =  gamepad1.right_stick_x;
+                // POV Mode uses left joystick to go forward & strafe, and right joystick to rotate.
+                double axial = -gamepad1.left_stick_y;  // Note: pushing stick forward gives negative value
+                double lateral = gamepad1.left_stick_x;
+                double yaw = gamepad1.right_stick_x;
 
-            drive.setDrivePowers(new PoseVelocity2d(new Vector2d(axial, lateral), yaw));
+                drive.setDrivePowers(new PoseVelocity2d(new Vector2d(axial, lateral), yaw));
 
-            // Hold left trigger to reverse or right trigger to run forward; reverse has priority.
-            if (gamepad1.left_trigger > 0.0)
-                intakeMotor.setPower(-1.0);
-            else if (gamepad1.right_trigger > 0.0)
-                intakeMotor.setPower(1.0);
-            else
-                intakeMotor.setPower(0.0);
+                // Hold left trigger to reverse or right trigger to run forward; reverse has priority.
+                if (gamepad1.left_trigger > 0.0)
+                    intakeMotor.setPower(-1.0);
+                else if (gamepad1.right_trigger > 0.0)
+                    intakeMotor.setPower(1.0);
+                else
+                    intakeMotor.setPower(0.0);
 
-            // Toggle once per press, even when the bumper is held down.
-            boolean leftBumperPressed = gamepad1.left_bumper;
-            if (leftBumperPressed && !leftBumperWasPressed) {
-                shooterRunning = !shooterRunning;
+                // Toggle once per press, even when the bumper is held down.
+                boolean leftBumperPressed = gamepad1.left_bumper;
+                if (leftBumperPressed && !leftBumperWasPressed) {
+                    shooterRunning = !shooterRunning;
+                }
+                leftBumperWasPressed = leftBumperPressed;
+
+                if (shooterMotor != null) {
+                    shooterMotor.setVelocity(shooterRunning ? SHOOTER_TARGET_TICKS_PER_SECOND : 0.0);
+                }
+            } catch (Exception e) {
+               handleExpection(e);
             }
-            leftBumperWasPressed = leftBumperPressed;
-
-            if (shooterMotor != null) {
-                shooterMotor.setVelocity(shooterRunning ? SHOOTER_TARGET_TICKS_PER_SECOND : 0.0);
-            }
-
         }
 
         drive.leftFront.setPower(0.0);

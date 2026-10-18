@@ -15,6 +15,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Collections;
 import java.util.List;
 
@@ -36,7 +38,14 @@ public abstract class InitOpMode extends LinearOpMode {
 
     // Optional until installed and configured. Check for null before using it.
     protected DcMotorEx shooterMotor;
+    public void handleExpection(Exception e){
+        StringWriter SW = new StringWriter();
+        PrintWriter PW = new PrintWriter(SW);
+        e.printStackTrace(PW);
+        telemetry.addLine(PW.toString());
+        telemetry.update();
 
+    }
     public void initialize() {
 
         // Match the drive motor names used by Road Runner MecanumDrive.
