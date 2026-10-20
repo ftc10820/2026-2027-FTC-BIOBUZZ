@@ -35,6 +35,7 @@ public abstract class InitOpMode extends LinearOpMode {
             SHOOTER_TARGET_RPM * SHOOTER_TICKS_PER_REV / 60.0;
 
     protected DcMotor intakeMotor;
+    protected DcMotor transferMotor;
     protected Servo flowerRampServo;
     public MecanumDrive drive;
 
@@ -54,9 +55,14 @@ public abstract class InitOpMode extends LinearOpMode {
         drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
         intakeMotor = hardwareMap.get(DcMotor.class, "intakeMotor");
 
+        transferMotor = hardwareMap.get(DcMotor.class, "transferMotor");
+        transferMotor.setPower(0.0);
+        transferMotor.setDirection(DcMotor.Direction.FORWARD);
+        transferMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
         // Configure Control Hub servo port 5 as "flowerRampServo".
         flowerRampServo = hardwareMap.get(Servo.class, "flowerRampServo");
-        flowerRampServo.setPosition(0.4);
+        flowerRampServo.setPosition(0.0);
 
         shooterMotor = hardwareMap.tryGet(DcMotorEx.class, "shooterMotor");
         if (shooterMotor != null) {
