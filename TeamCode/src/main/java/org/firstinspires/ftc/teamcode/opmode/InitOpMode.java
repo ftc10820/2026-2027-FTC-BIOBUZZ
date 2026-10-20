@@ -71,7 +71,8 @@ public abstract class InitOpMode extends LinearOpMode {
 
         System.out.println("Drive motors initialized");
         telemetry.addLine("Drive motors initialized");
-        initializeLimelight();
+        // Temporarily disabled until the Limelight is configured; uncomment to enable vision.
+        // initializeLimelight();
         telemetry.update();
 
     }
@@ -105,7 +106,7 @@ public abstract class InitOpMode extends LinearOpMode {
      */
     private void initializeLimelight() {
         // The Limelight 3A must be named "limelight" in the robot configuration.
-        // limelight = hardwareMap.get(Limelight3A.class, "limelight");
+        limelight = hardwareMap.get(Limelight3A.class, "limelight");
         limelight.setPollRateHz(100);
         requestedLimelightPipeline = limelight.pipelineSwitch(LIMELIGHT_PIPELINE_APRILTAGS)
                 ? LIMELIGHT_PIPELINE_APRILTAGS : -1;
