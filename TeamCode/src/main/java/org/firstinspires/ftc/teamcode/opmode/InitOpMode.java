@@ -56,7 +56,7 @@ public abstract class InitOpMode extends LinearOpMode {
 
         // Configure Control Hub servo port 5 as "flowerRampServo".
         flowerRampServo = hardwareMap.get(Servo.class, "flowerRampServo");
-        flowerRampServo.setPosition(0.0);
+        flowerRampServo.setPosition(0.4);
 
         shooterMotor = hardwareMap.tryGet(DcMotorEx.class, "shooterMotor");
         if (shooterMotor != null) {

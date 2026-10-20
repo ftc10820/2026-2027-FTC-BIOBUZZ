@@ -82,7 +82,7 @@ public class TeleOpBlue extends InitOpMode {
                 boolean xPressed = gamepad1.x;
                 if (xPressed && !xWasPressed) {
                     flowerRampAtPositionOne = !flowerRampAtPositionOne;
-                    flowerRampServo.setPosition(flowerRampAtPositionOne ? 1.0 : 0.0);
+                    flowerRampServo.setPosition(flowerRampAtPositionOne ? 1.0 : 0.4);
                 }
                 xWasPressed = xPressed;
             } catch (Exception e) {
