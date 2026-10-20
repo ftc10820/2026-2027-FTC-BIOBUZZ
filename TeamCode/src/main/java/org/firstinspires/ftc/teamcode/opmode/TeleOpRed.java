@@ -37,7 +37,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 // Drive loop copied from the FTC SDK sample BasicOmniOpMode_Linear.
-// Uses our shared hardware initialization and adds intake and shooter controls.
+// Uses our shared hardware initialization and adds intake, shooter, and flower ramp controls.
 @TeleOp(name="TeleOp Red", group="FTC10820")
 public class TeleOpRed extends InitOpMode {
     @Override
@@ -46,6 +46,8 @@ public class TeleOpRed extends InitOpMode {
 
         boolean shooterRunning = false;
         boolean leftBumperWasPressed = false;
+        boolean flowerRampAtPositionOne = false;
+        boolean xWasPressed = false;
 
         waitForStart();
 
@@ -78,6 +80,14 @@ public class TeleOpRed extends InitOpMode {
                 if (shooterMotor != null) {
                     shooterMotor.setVelocity(shooterRunning ? SHOOTER_TARGET_TICKS_PER_SECOND : 0.0);
                 }
+
+                // Toggle once per X press, even when the button is held down.
+                boolean xPressed = gamepad1.x;
+                if (xPressed && !xWasPressed) {
+                    flowerRampAtPositionOne = !flowerRampAtPositionOne;
+                    flowerRampServo.setPosition(flowerRampAtPositionOne ? 1.0 : 0.0);
+                }
+                xWasPressed = xPressed;
             } catch (Exception e) {
                handleExpection(e);
             }

@@ -8,6 +8,7 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -34,6 +35,7 @@ public abstract class InitOpMode extends LinearOpMode {
             SHOOTER_TARGET_RPM * SHOOTER_TICKS_PER_REV / 60.0;
 
     protected DcMotor intakeMotor;
+    protected Servo flowerRampServo;
     public MecanumDrive drive;
 
     // Optional until installed and configured. Check for null before using it.
@@ -51,6 +53,10 @@ public abstract class InitOpMode extends LinearOpMode {
         // Match the drive motor names used by Road Runner MecanumDrive.
         drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
         intakeMotor = hardwareMap.get(DcMotor.class, "intakeMotor");
+
+        // Configure Control Hub servo port 5 as "flowerRampServo".
+        flowerRampServo = hardwareMap.get(Servo.class, "flowerRampServo");
+        flowerRampServo.setPosition(0.0);
 
         shooterMotor = hardwareMap.tryGet(DcMotorEx.class, "shooterMotor");
         if (shooterMotor != null) {
