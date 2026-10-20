@@ -105,7 +105,7 @@ public abstract class InitOpMode extends LinearOpMode {
      */
     private void initializeLimelight() {
         // The Limelight 3A must be named "limelight" in the robot configuration.
-        limelight = hardwareMap.get(Limelight3A.class, "limelight");
+        // limelight = hardwareMap.get(Limelight3A.class, "limelight");
         limelight.setPollRateHz(100);
         requestedLimelightPipeline = limelight.pipelineSwitch(LIMELIGHT_PIPELINE_APRILTAGS)
                 ? LIMELIGHT_PIPELINE_APRILTAGS : -1;
