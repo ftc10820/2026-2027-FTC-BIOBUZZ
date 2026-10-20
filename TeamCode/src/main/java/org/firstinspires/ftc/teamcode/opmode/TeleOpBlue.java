@@ -54,8 +54,9 @@ public class TeleOpBlue extends InitOpMode {
 
                 // POV Mode uses left joystick to go forward & strafe, and right joystick to rotate.
                 double axial = -gamepad1.left_stick_y;  // Note: pushing stick forward gives negative value
-                double lateral = gamepad1.left_stick_x;
-                double yaw = gamepad1.right_stick_x;
+                // Road Runner uses positive left strafe and counterclockwise rotation.
+                double lateral = -gamepad1.left_stick_x;
+                double yaw = -gamepad1.right_stick_x;
 
                 drive.setDrivePowers(new PoseVelocity2d(new Vector2d(axial, lateral), yaw));
 
@@ -74,7 +75,7 @@ public class TeleOpBlue extends InitOpMode {
                 }
                 leftBumperWasPressed = leftBumperPressed;
 
-                transferMotor.setPower(shooterRunning ? 0.5 : 0.0);
+                transferMotor.setPower(shooterRunning ? 1.0 : 0.0);
                 if (shooterMotor != null) {
                     shooterMotor.setVelocity(shooterRunning ? SHOOTER_TARGET_TICKS_PER_SECOND : 0.0);
                 }
