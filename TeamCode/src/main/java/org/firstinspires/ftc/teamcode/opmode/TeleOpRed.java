@@ -37,7 +37,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 // Drive loop copied from the FTC SDK sample BasicOmniOpMode_Linear.
-// Uses our shared hardware initialization and adds intake and shooter controls.
+// Uses our shared hardware initialization and adds intake, shooter, transfer, and flower ramp controls.
 @TeleOp(name="TeleOp Red", group="FTC10820")
 public class TeleOpRed extends InitOpMode {
     @Override
@@ -46,6 +46,8 @@ public class TeleOpRed extends InitOpMode {
 
         boolean shooterRunning = false;
         boolean leftBumperWasPressed = false;
+        boolean flowerRampAtPositionHalf = false;
+        boolean xWasPressed = false;
 
         waitForStart();
 
@@ -55,8 +57,9 @@ public class TeleOpRed extends InitOpMode {
 
                 // POV Mode uses left joystick to go forward & strafe, and right joystick to rotate.
                 double axial = -gamepad1.left_stick_y;  // Note: pushing stick forward gives negative value
-                double lateral = gamepad1.left_stick_x;
-                double yaw = gamepad1.right_stick_x;
+                // Road Runner uses positive left strafe and counterclockwise rotation.
+                double lateral = -gamepad1.left_stick_x;
+                double yaw = -gamepad1.right_stick_x;
 
                 drive.setDrivePowers(new PoseVelocity2d(new Vector2d(axial, lateral), yaw));
 
@@ -68,16 +71,25 @@ public class TeleOpRed extends InitOpMode {
                 else
                     intakeMotor.setPower(0.0);
 
-                // Toggle once per press, even when the bumper is held down.
+                // Toggle the shooter and transfer together once per left-bumper press.
                 boolean leftBumperPressed = gamepad1.left_bumper;
                 if (leftBumperPressed && !leftBumperWasPressed) {
                     shooterRunning = !shooterRunning;
                 }
                 leftBumperWasPressed = leftBumperPressed;
 
+                transferMotor.setPower(shooterRunning ? 1.0 : 0.0);
                 if (shooterMotor != null) {
                     shooterMotor.setVelocity(shooterRunning ? SHOOTER_TARGET_TICKS_PER_SECOND : 0.0);
                 }
+
+                // Toggle once per X press, even when the button is held down.
+                boolean xPressed = gamepad1.x;
+                if (xPressed && !xWasPressed) {
+                    flowerRampAtPositionHalf = !flowerRampAtPositionHalf;
+                    flowerRampServo.setPosition(flowerRampAtPositionHalf ? 0.5 : 0.0);
+                }
+                xWasPressed = xPressed;
             } catch (Exception e) {
                handleExpection(e);
             }
@@ -88,6 +100,7 @@ public class TeleOpRed extends InitOpMode {
         drive.leftBack.setPower(0.0);
         drive.rightBack.setPower(0.0);
         intakeMotor.setPower(0.0);
+        transferMotor.setPower(0.0);
         if (shooterMotor != null) {
             shooterMotor.setVelocity(0.0);
         }
