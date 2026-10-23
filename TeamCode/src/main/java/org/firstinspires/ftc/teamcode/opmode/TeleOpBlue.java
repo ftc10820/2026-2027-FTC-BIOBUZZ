@@ -57,6 +57,9 @@ public class TeleOpBlue extends InitOpMode {
                 // Road Runner uses positive left strafe and counterclockwise rotation.
                 double lateral = -gamepad1.left_stick_x;
                 double yaw = -gamepad1.right_stick_x;
+                axial = Math.pow(axial,3);
+                lateral = Math.pow(lateral,3);
+                yaw = Math.pow(yaw,3);
 
                 drive.setDrivePowers(new PoseVelocity2d(new Vector2d(axial, lateral), yaw));
 
