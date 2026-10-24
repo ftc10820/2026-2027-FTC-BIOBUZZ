@@ -33,11 +33,13 @@ public abstract class InitOpMode extends LinearOpMode {
     protected static final double SHOOTER_MAX_RPM = 6000.0;
     // The 6000 RPM, 1:1 goBILDA Yellow Jacket has 28 ticks per output-shaft revolution.
     protected static final double SHOOTER_TICKS_PER_REV = 28.0;
-    protected static final double TRANSFER_TARGET_RPM = 2000.0;
+    protected static final double STOPPER_CLOSED_POSITION = 0.0;
+    protected static final double STOPPER_OPEN_POSITION = 0.4;
 
     protected DcMotor intakeMotor;
-    protected DcMotorEx transferMotor;
+    protected DcMotor transferMotor;
     protected Servo flowerRampServo;
+    protected Servo stopperServo;
     public MecanumDrive drive;
 
     // Optional until installed and configured. Check for null before using it.
@@ -52,16 +54,17 @@ public abstract class InitOpMode extends LinearOpMode {
     }
     public void initialize() {
 
+        stopperServo = hardwareMap.get(Servo.class, "stopperServo");
+        stopperServo.setPosition(STOPPER_CLOSED_POSITION);
+
         // Match the drive motor names used by Road Runner MecanumDrive.
         drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
         intakeMotor = hardwareMap.get(DcMotor.class, "intakeMotor");
 
-        transferMotor = hardwareMap.get(DcMotorEx.class, "transferMotor");
+        transferMotor = hardwareMap.get(DcMotor.class, "transferMotor");
         transferMotor.setPower(0.0);
         transferMotor.setDirection(DcMotor.Direction.FORWARD);
-        // Requires an encoder cable and the correct motor type in the robot configuration.
-        transferMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        transferMotor.setVelocity(0.0);
+        transferMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         // Configure Control Hub servo port 5 as "flowerRampServo".
         flowerRampServo = hardwareMap.get(Servo.class, "flowerRampServo");

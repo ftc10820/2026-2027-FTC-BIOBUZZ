@@ -45,12 +45,11 @@ public class TeleOpRed extends InitOpMode {
         initialize();
 
         boolean shooterRunning = false;
+        boolean stopperOpen = false;
+        boolean yWasPressed = false;
         double shooterTargetRpm = SHOOTER_TARGET_RPM;
         boolean dpadUpWasPressed = false;
         boolean dpadDownWasPressed = false;
-        // Use the transfer motor's configured output-shaft encoder resolution.
-        double transferTargetTicksPerSecond =
-                TRANSFER_TARGET_RPM * transferMotor.getMotorType().getTicksPerRev() / 60.0;
         boolean leftBumperWasPressed = false;
         boolean flowerRampAtPositionHalf = false;
         boolean xWasPressed = false;
@@ -94,16 +93,29 @@ public class TeleOpRed extends InitOpMode {
                 if (dpadDownPressed && !dpadDownWasPressed) {
                     rpmAdjustment -= SHOOTER_RPM_STEP;
                 }
+                double previousTargetRpm = shooterTargetRpm;
                 shooterTargetRpm = Math.max(0.0,
                         Math.min(SHOOTER_MAX_RPM, shooterTargetRpm + rpmAdjustment));
+                if (shooterTargetRpm != previousTargetRpm) {
+                    telemetry.log().add("Flywheel speed set to %.0f RPM", shooterTargetRpm);
+                }
                 dpadUpWasPressed = dpadUpPressed;
                 dpadDownWasPressed = dpadDownPressed;
 
-                transferMotor.setVelocity(shooterRunning ? transferTargetTicksPerSecond : 0.0);
+                transferMotor.setPower(shooterRunning ? 1.0 : 0.0);
                 if (shooterMotor != null) {
                     shooterMotor.setVelocity(shooterRunning
                             ? shooterTargetRpm * SHOOTER_TICKS_PER_REV / 60.0 : 0.0);
                 }
+
+                // Toggle the stopper once per Y press, independently of the shooter.
+                boolean yPressed = gamepad1.y;
+                if (yPressed && !yWasPressed) {
+                    stopperOpen = !stopperOpen;
+                    stopperServo.setPosition(stopperOpen
+                            ? STOPPER_OPEN_POSITION : STOPPER_CLOSED_POSITION);
+                }
+                yWasPressed = yPressed;
 
                 // Toggle once per X press, even when the button is held down.
                 boolean xPressed = gamepad1.x;
@@ -125,7 +137,8 @@ public class TeleOpRed extends InitOpMode {
         drive.leftBack.setPower(0.0);
         drive.rightBack.setPower(0.0);
         intakeMotor.setPower(0.0);
-        transferMotor.setVelocity(0.0);
+        stopperServo.setPosition(STOPPER_CLOSED_POSITION);
+        transferMotor.setPower(0.0);
         if (shooterMotor != null) {
             shooterMotor.setVelocity(0.0);
         }
