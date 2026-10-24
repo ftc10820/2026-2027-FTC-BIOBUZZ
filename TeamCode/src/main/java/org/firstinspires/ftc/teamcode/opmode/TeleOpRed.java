@@ -45,6 +45,12 @@ public class TeleOpRed extends InitOpMode {
         initialize();
 
         boolean shooterRunning = false;
+        double shooterTargetRpm = SHOOTER_TARGET_RPM;
+        boolean dpadUpWasPressed = false;
+        boolean dpadDownWasPressed = false;
+        // Use the transfer motor's configured output-shaft encoder resolution.
+        double transferTargetTicksPerSecond =
+                TRANSFER_TARGET_RPM * transferMotor.getMotorType().getTicksPerRev() / 60.0;
         boolean leftBumperWasPressed = false;
         boolean flowerRampAtPositionHalf = false;
         boolean xWasPressed = false;
@@ -78,9 +84,25 @@ public class TeleOpRed extends InitOpMode {
                 }
                 leftBumperWasPressed = leftBumperPressed;
 
-                transferMotor.setPower(shooterRunning ? 1.0 : 0.0);
+                // Adjust once per D-pad press; holding a button does not repeat.
+                boolean dpadUpPressed = gamepad1.dpad_up;
+                boolean dpadDownPressed = gamepad1.dpad_down;
+                double rpmAdjustment = 0.0;
+                if (dpadUpPressed && !dpadUpWasPressed) {
+                    rpmAdjustment += SHOOTER_RPM_STEP;
+                }
+                if (dpadDownPressed && !dpadDownWasPressed) {
+                    rpmAdjustment -= SHOOTER_RPM_STEP;
+                }
+                shooterTargetRpm = Math.max(0.0,
+                        Math.min(SHOOTER_MAX_RPM, shooterTargetRpm + rpmAdjustment));
+                dpadUpWasPressed = dpadUpPressed;
+                dpadDownWasPressed = dpadDownPressed;
+
+                transferMotor.setVelocity(shooterRunning ? transferTargetTicksPerSecond : 0.0);
                 if (shooterMotor != null) {
-                    shooterMotor.setVelocity(shooterRunning ? SHOOTER_TARGET_TICKS_PER_SECOND : 0.0);
+                    shooterMotor.setVelocity(shooterRunning
+                            ? shooterTargetRpm * SHOOTER_TICKS_PER_REV / 60.0 : 0.0);
                 }
 
                 // Toggle once per X press, even when the button is held down.
@@ -90,6 +112,9 @@ public class TeleOpRed extends InitOpMode {
                     flowerRampServo.setPosition(flowerRampAtPositionHalf ? 0.5 : 0.0);
                 }
                 xWasPressed = xPressed;
+                telemetry.addData("Flywheel target RPM", shooterTargetRpm);
+                telemetry.addData("Shooter / transfer", shooterRunning ? "On" : "Off");
+                telemetry.update();
             } catch (Exception e) {
                handleExpection(e);
             }
@@ -100,7 +125,7 @@ public class TeleOpRed extends InitOpMode {
         drive.leftBack.setPower(0.0);
         drive.rightBack.setPower(0.0);
         intakeMotor.setPower(0.0);
-        transferMotor.setPower(0.0);
+        transferMotor.setVelocity(0.0);
         if (shooterMotor != null) {
             shooterMotor.setVelocity(0.0);
         }

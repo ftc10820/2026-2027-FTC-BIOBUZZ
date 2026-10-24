@@ -28,14 +28,15 @@ import java.util.List;
  */
 public abstract class InitOpMode extends LinearOpMode {
 
-    private static final double SHOOTER_TARGET_RPM = 2500.0;
+    protected static final double SHOOTER_TARGET_RPM = 2000.0;
+    protected static final double SHOOTER_RPM_STEP = 250.0;
+    protected static final double SHOOTER_MAX_RPM = 6000.0;
     // The 6000 RPM, 1:1 goBILDA Yellow Jacket has 28 ticks per output-shaft revolution.
-    private static final double SHOOTER_TICKS_PER_REV = 28.0;
-    protected static final double SHOOTER_TARGET_TICKS_PER_SECOND =
-            SHOOTER_TARGET_RPM * SHOOTER_TICKS_PER_REV / 60.0;
+    protected static final double SHOOTER_TICKS_PER_REV = 28.0;
+    protected static final double TRANSFER_TARGET_RPM = 2000.0;
 
     protected DcMotor intakeMotor;
-    protected DcMotor transferMotor;
+    protected DcMotorEx transferMotor;
     protected Servo flowerRampServo;
     public MecanumDrive drive;
 
@@ -55,10 +56,12 @@ public abstract class InitOpMode extends LinearOpMode {
         drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
         intakeMotor = hardwareMap.get(DcMotor.class, "intakeMotor");
 
-        transferMotor = hardwareMap.get(DcMotor.class, "transferMotor");
+        transferMotor = hardwareMap.get(DcMotorEx.class, "transferMotor");
         transferMotor.setPower(0.0);
         transferMotor.setDirection(DcMotor.Direction.FORWARD);
-        transferMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        // Requires an encoder cable and the correct motor type in the robot configuration.
+        transferMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        transferMotor.setVelocity(0.0);
 
         // Configure Control Hub servo port 5 as "flowerRampServo".
         flowerRampServo = hardwareMap.get(Servo.class, "flowerRampServo");
