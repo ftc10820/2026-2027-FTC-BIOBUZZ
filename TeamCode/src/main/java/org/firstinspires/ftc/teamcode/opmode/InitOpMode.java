@@ -9,6 +9,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.ServoImplEx;
+import com.qualcomm.robotcore.hardware.PwmControl;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -28,13 +30,21 @@ import java.util.List;
  */
 public abstract class InitOpMode extends LinearOpMode {
 
-    protected static final double SHOOTER_TARGET_RPM = 2000.0;
-    protected static final double SHOOTER_RPM_STEP = 250.0;
-    protected static final double SHOOTER_MAX_RPM = 6000.0;
-    // The 6000 RPM, 1:1 goBILDA Yellow Jacket has 28 ticks per output-shaft revolution.
-    protected static final double SHOOTER_TICKS_PER_REV = 28.0;
     protected static final double STOPPER_CLOSED_POSITION = 0.0;
     protected static final double STOPPER_OPEN_POSITION = 0.4;
+
+    // Stock goBILDA 3208-0004-0001 turret: 2.75 servo turns per turret turn.
+    // https://www.gobilda.com/gear-driven-turret-2-75-1-ratio-105mm-id/
+    protected static final double TURRET_STEP_DEGREES = 60.0;
+    // Three 60-degree steps from center in either direction.
+    private static final double TURRET_MAX_ANGLE_DEGREES = 180.0;
+    private static final double TURRET_GEAR_RATIO = 2.75;
+    // 2000-0025-0502 in its default positional mode: 1800 degrees at 500–2500 us.
+    // https://www.gobilda.com/2000-series-5-turn-dual-mode-servo-25-2-torque/
+    private static final double TURRET_SERVO_TRAVEL_DEGREES = 1800.0;
+    private static final double TURRET_CENTER_POSITION = 0.5;
+    protected double turretTargetDegrees = 0.0;
+    private ServoImplEx turretServo;
 
     protected DcMotor intakeMotor;
     protected DcMotor transferMotor;
@@ -74,7 +84,8 @@ public abstract class InitOpMode extends LinearOpMode {
         if (shooterMotor != null) {
             shooterMotor.setPower(0.0);
             shooterMotor.setDirection(DcMotor.Direction.REVERSE);
-            // Requires the encoder cable in the same numbered Hub port as motor power.
+            // Preserve encoder velocity control for PID Tuning OpMode.
+            // Red/Blue TeleOp switch to direct power after shared initialization.
             shooterMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             shooterMotor.setVelocity(0.0);
         }
@@ -87,6 +98,44 @@ public abstract class InitOpMode extends LinearOpMode {
         // initializeLimelight();
         telemetry.update();
 
+    }
+
+    /**
+     * Called by TeleOp before waitForStart(). Configure the connected Hub servo port
+     * as "turretServo". Mechanically align the turret forward at position 0.5.
+     */
+    protected void initializeTurret() {
+        turretServo = hardwareMap.get(ServoImplEx.class, "turretServo");
+        turretServo.setDirection(Servo.Direction.FORWARD);
+        turretServo.setPwmRange(new PwmControl.PwmRange(500.0, 2500.0));
+        turretTargetDegrees = 0.0;
+        turretServo.setPosition(TURRET_CENTER_POSITION);
+        telemetry.addData("Turret target (deg, +left)", turretTargetDegrees);
+        telemetry.update();
+    }
+
+    /**
+     * Positive angles turn the turret left (counterclockwise viewed from above).
+     * Increasing PWM turns the upright servo clockwise; the external gears reverse
+     * that into counterclockwise turret motion. Never wrap around at a travel limit.
+     */
+    protected void moveTurretByDegrees(double deltaDegrees) {
+        if (deltaDegrees == 0.0) {
+            return;
+        }
+        double nextTargetDegrees = turretTargetDegrees + deltaDegrees;
+        if (Math.abs(nextTargetDegrees) > TURRET_MAX_ANGLE_DEGREES) {
+            telemetry.log().add("Turret limit: 180 degrees from center");
+            return;
+        }
+        double nextPosition = TURRET_CENTER_POSITION
+                + nextTargetDegrees * TURRET_GEAR_RATIO / TURRET_SERVO_TRAVEL_DEGREES;
+        if (nextPosition < 0.0 || nextPosition > 1.0) {
+            telemetry.log().add("Turret travel limit: cannot take another 60-degree step");
+            return;
+        }
+        turretServo.setPosition(nextPosition);
+        turretTargetDegrees = nextTargetDegrees;
     }
 
     //region Limelight 3A

@@ -17,6 +17,7 @@ public class ShooterOpMode extends InitOpMode {
     public void runOpMode () {
         initialize();
 
+        dashboard = FtcDashboard.getInstance();
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 
         waitForStart();
