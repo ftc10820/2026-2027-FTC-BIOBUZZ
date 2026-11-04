@@ -49,7 +49,7 @@ public abstract class InitOpMode extends LinearOpMode {
     protected DcMotor intakeMotor;
     protected DcMotor transferMotor;
     protected DcMotor slideMotor;
-    protected Servo nectarServo;
+    protected Servo grabberServo;
     protected Servo flowerRampServo;
     protected Servo stopperServo;
     public MecanumDrive drive;
@@ -82,8 +82,8 @@ public abstract class InitOpMode extends LinearOpMode {
         flowerRampServo = hardwareMap.get(Servo.class, "flowerRampServo");
         flowerRampServo.setPosition(0.0);
 
-        nectarServo = hardwareMap.get(Servo.class, "nectarServo");
-        nectarServo.setPosition(0.0);
+        grabberServo = hardwareMap.get(Servo.class, "grabberServo");
+        grabberServo.setPosition(0.0);
 
         slideMotor = hardwareMap.get(DcMotor.class, "slideMotor");
         slideMotor.setPower(0.0);

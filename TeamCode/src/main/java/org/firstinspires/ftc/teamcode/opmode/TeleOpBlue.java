@@ -55,10 +55,19 @@ public class TeleOpBlue extends InitOpMode {
         boolean leftBumperWasPressed = false;
         boolean dpadLeftWasPressed = false;
         boolean dpadRightWasPressed = false;
-        boolean nectarOpen = false;
-        boolean nectarXWasPressed = false;
+        boolean grabberOpen = false;
+        boolean grabberXWasPressed = false;
 
         waitForStart();
+        if (isStopRequested()) {
+            return;
+        }
+
+        // Reapply the closed position on START as well as during INIT.
+        grabberServo.setPosition(0.0);
+        grabberOpen = false;
+        // Require a fresh X press so a held button cannot immediately reopen it.
+        grabberXWasPressed = gamepad2.x;
 
         while (opModeIsActive()) {
             try {
@@ -116,13 +125,13 @@ public class TeleOpBlue extends InitOpMode {
                 // Releasing both triggers stops the motor; equal presses cancel each other.
                 slideMotor.setPower(gamepad2.left_trigger - gamepad2.right_trigger);
 
-                // Toggle nectar once per X press, even when the button is held.
-                boolean nectarXPressed = gamepad2.x;
-                if (nectarXPressed && !nectarXWasPressed) {
-                    nectarOpen = !nectarOpen;
-                    nectarServo.setPosition(nectarOpen ? 0.5 : 0.0);
+                // Toggle grabber once per X press, even when the button is held.
+                boolean grabberXPressed = gamepad2.x;
+                if (grabberXPressed && !grabberXWasPressed) {
+                    grabberOpen = !grabberOpen;
+                    grabberServo.setPosition(grabberOpen ? 0.5 : 0.0);
                 }
-                nectarXWasPressed = nectarXPressed;
+                grabberXWasPressed = grabberXPressed;
 
                 // Move the actual turret 60 degrees per press; holding does not repeat.
                 boolean dpadLeftPressed = gamepad1.dpad_left;
