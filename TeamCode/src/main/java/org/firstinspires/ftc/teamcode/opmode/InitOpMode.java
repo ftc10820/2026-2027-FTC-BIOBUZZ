@@ -31,7 +31,7 @@ import java.util.List;
 public abstract class InitOpMode extends LinearOpMode {
 
     protected static final double STOPPER_CLOSED_POSITION = 0.0;
-    protected static final double STOPPER_OPEN_POSITION = 0.4;
+    protected static final double STOPPER_OPEN_POSITION = 0.15;
 
     // Stock goBILDA 3208-0004-0001 turret: 2.75 servo turns per turret turn.
     // https://www.gobilda.com/gear-driven-turret-2-75-1-ratio-105mm-id/
@@ -48,6 +48,8 @@ public abstract class InitOpMode extends LinearOpMode {
 
     protected DcMotor intakeMotor;
     protected DcMotor transferMotor;
+    protected DcMotor slideMotor;
+    protected Servo nectarServo;
     protected Servo flowerRampServo;
     protected Servo stopperServo;
     public MecanumDrive drive;
@@ -79,6 +81,16 @@ public abstract class InitOpMode extends LinearOpMode {
         // Configure Control Hub servo port 5 as "flowerRampServo".
         flowerRampServo = hardwareMap.get(Servo.class, "flowerRampServo");
         flowerRampServo.setPosition(0.0);
+
+        nectarServo = hardwareMap.get(Servo.class, "nectarServo");
+        nectarServo.setPosition(0.0);
+
+        slideMotor = hardwareMap.get(DcMotor.class, "slideMotor");
+        slideMotor.setPower(0.0);
+        // Positive power raises the slide; reverse this direction if needed for the mechanism.
+        slideMotor.setDirection(DcMotor.Direction.FORWARD);
+        slideMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        slideMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         shooterMotor = hardwareMap.tryGet(DcMotorEx.class, "shooterMotor");
         if (shooterMotor != null) {

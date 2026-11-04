@@ -55,6 +55,8 @@ public class TeleOpBlue extends InitOpMode {
         boolean leftBumperWasPressed = false;
         boolean dpadLeftWasPressed = false;
         boolean dpadRightWasPressed = false;
+        boolean nectarOpen = false;
+        boolean nectarXWasPressed = false;
 
         waitForStart();
 
@@ -110,6 +112,18 @@ public class TeleOpBlue extends InitOpMode {
                 }
                 leftBumperWasPressed = leftBumperPressed;
 
+                // Gamepad 2: proportional slide power, left trigger up and right trigger down.
+                // Releasing both triggers stops the motor; equal presses cancel each other.
+                slideMotor.setPower(gamepad2.left_trigger - gamepad2.right_trigger);
+
+                // Toggle nectar once per X press, even when the button is held.
+                boolean nectarXPressed = gamepad2.x;
+                if (nectarXPressed && !nectarXWasPressed) {
+                    nectarOpen = !nectarOpen;
+                    nectarServo.setPosition(nectarOpen ? 0.5 : 0.0);
+                }
+                nectarXWasPressed = nectarXPressed;
+
                 // Move the actual turret 60 degrees per press; holding does not repeat.
                 boolean dpadLeftPressed = gamepad1.dpad_left;
                 boolean dpadRightPressed = gamepad1.dpad_right;
@@ -136,6 +150,7 @@ public class TeleOpBlue extends InitOpMode {
         drive.leftBack.setPower(0.0);
         drive.rightBack.setPower(0.0);
         intakeMotor.setPower(0.0);
+        slideMotor.setPower(0.0);
         stopperServo.setPosition(STOPPER_CLOSED_POSITION);
         transferMotor.setPower(0.0);
         if (shooterMotor != null) {
