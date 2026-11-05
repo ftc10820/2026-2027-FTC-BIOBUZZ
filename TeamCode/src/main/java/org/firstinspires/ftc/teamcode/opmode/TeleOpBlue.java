@@ -51,7 +51,7 @@ public class TeleOpBlue extends InitOpMode {
         boolean stopperOpen = false;
         boolean yWasPressed = false;
         boolean rightBumperWasPressed = false;
-        boolean flowerRampAtPositionHalf = false;
+        boolean flowerRampAtPositionHalf = true;
         boolean leftBumperWasPressed = false;
         boolean dpadLeftWasPressed = false;
         boolean dpadRightWasPressed = false;
