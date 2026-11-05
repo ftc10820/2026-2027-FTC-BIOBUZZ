@@ -31,7 +31,7 @@ import java.util.List;
 public abstract class InitOpMode extends LinearOpMode {
 
     protected static final double STOPPER_CLOSED_POSITION = 0.0;
-    protected static final double STOPPER_OPEN_POSITION = 0.15;
+    protected static final double STOPPER_OPEN_POSITION = 0.2;
 
     // Stock goBILDA 3208-0004-0001 turret: 2.75 servo turns per turret turn.
     // https://www.gobilda.com/gear-driven-turret-2-75-1-ratio-105mm-id/
