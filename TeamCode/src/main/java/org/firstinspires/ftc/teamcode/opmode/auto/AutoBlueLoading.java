@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.opmode.InitOpMode;
 
-@Autonomous(name="Basic: Iterative OpMode", group = "Iterative OpMode")
+@Autonomous(name="Auto Blue Loading", group = "Iterative OpMode")
 public class AutoBlueLoading extends InitOpMode{
     public void runOpMode() {
         initialize();
