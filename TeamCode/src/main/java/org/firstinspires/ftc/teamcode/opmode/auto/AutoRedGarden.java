@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.opmode.InitOpMode;
 
-@Autonomous(name="Auto Red Garden", group = "Auto")
+@Autonomous(name="Shooter OpMode", group = "Auto")
 public class AutoRedGarden extends InitOpMode{
     public void runOpMode() {
 
