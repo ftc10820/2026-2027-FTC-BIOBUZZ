@@ -8,10 +8,15 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.opmode.InitOpMode;
 
+<<<<<<< HEAD
 @Autonomous(name = "Auto Red Gardem", group = "Iterative OpMode")
 public class AutoRedGarden extends InitOpMode {
 
     @Override
+=======
+@Autonomous(name="Auto Red Garden", group = "Auto")
+public class AutoRedGarden extends InitOpMode{
+>>>>>>> refs/remotes/origin/master
     public void runOpMode() {
 
         initialize();

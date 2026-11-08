@@ -32,6 +32,7 @@ package org.firstinspires.ftc.teamcode.opmode;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -43,18 +44,33 @@ public class TeleOpRed extends InitOpMode {
     @Override
     public void runOpMode() {
         initialize();
+        if (shooterMotor != null) {
+            // Full-power on/off control is specific to this TeleOp.
+            shooterMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        }
+        initializeTurret();
 
         boolean shooterRunning = false;
         boolean stopperOpen = false;
         boolean yWasPressed = false;
-        double shooterTargetRpm = SHOOTER_TARGET_RPM;
-        boolean dpadUpWasPressed = false;
-        boolean dpadDownWasPressed = false;
+        boolean rightBumperWasPressed = false;
+        boolean flowerRampAtPositionHalf = true;
         boolean leftBumperWasPressed = false;
-        boolean flowerRampAtPositionHalf = false;
-        boolean xWasPressed = false;
+        boolean dpadLeftWasPressed = false;
+        boolean dpadRightWasPressed = false;
+        boolean grabberOpen = false;
+        boolean grabberXWasPressed = false;
 
         waitForStart();
+        if (isStopRequested()) {
+            return;
+        }
+
+        // Reapply the closed position on START as well as during INIT.
+        grabberServo.setPosition(0.0);
+        grabberOpen = false;
+        // Require a fresh X press so a held button cannot immediately reopen it.
+        grabberXWasPressed = gamepad2.x;
 
         while (opModeIsActive()) {
             try {
@@ -79,36 +95,16 @@ public class TeleOpRed extends InitOpMode {
                 else
                     intakeMotor.setPower(0.0);
 
-                // Toggle the shooter and transfer together once per left-bumper press.
-                boolean leftBumperPressed = gamepad1.left_bumper;
-                if (leftBumperPressed && !leftBumperWasPressed) {
+                // Toggle the shooter and transfer together once per right-bumper press.
+                boolean rightBumperPressed = gamepad1.right_bumper;
+                if (rightBumperPressed && !rightBumperWasPressed) {
                     shooterRunning = !shooterRunning;
                 }
-                leftBumperWasPressed = leftBumperPressed;
-
-                // Adjust once per D-pad press; holding a button does not repeat.
-                boolean dpadUpPressed = gamepad1.dpad_up;
-                boolean dpadDownPressed = gamepad1.dpad_down;
-                double rpmAdjustment = 0.0;
-                if (dpadUpPressed && !dpadUpWasPressed) {
-                    rpmAdjustment += SHOOTER_RPM_STEP;
-                }
-                if (dpadDownPressed && !dpadDownWasPressed) {
-                    rpmAdjustment -= SHOOTER_RPM_STEP;
-                }
-                double previousTargetRpm = shooterTargetRpm;
-                shooterTargetRpm = Math.max(0.0,
-                        Math.min(SHOOTER_MAX_RPM, shooterTargetRpm + rpmAdjustment));
-                if (shooterTargetRpm != previousTargetRpm) {
-                    telemetry.log().add("Flywheel speed set to %.0f RPM", shooterTargetRpm);
-                }
-                dpadUpWasPressed = dpadUpPressed;
-                dpadDownWasPressed = dpadDownPressed;
+                rightBumperWasPressed = rightBumperPressed;
 
                 transferMotor.setPower(shooterRunning ? 1.0 : 0.0);
                 if (shooterMotor != null) {
-                    shooterMotor.setVelocity(shooterRunning
-                            ? shooterTargetRpm * SHOOTER_TICKS_PER_REV / 60.0 : 0.0);
+                    shooterMotor.setPower(shooterRunning ? 1.0 : 0.0);
                 }
 
                 // Toggle the stopper once per Y press, independently of the shooter.
@@ -120,14 +116,40 @@ public class TeleOpRed extends InitOpMode {
                 }
                 yWasPressed = yPressed;
 
-                // Toggle once per X press, even when the button is held down.
-                boolean xPressed = gamepad1.x;
-                if (xPressed && !xWasPressed) {
+                // Toggle once per left-bumper press, even when the button is held down.
+                boolean leftBumperPressed = gamepad1.left_bumper;
+                if (leftBumperPressed && !leftBumperWasPressed) {
                     flowerRampAtPositionHalf = !flowerRampAtPositionHalf;
                     flowerRampServo.setPosition(flowerRampAtPositionHalf ? 0.5 : 0.0);
                 }
-                xWasPressed = xPressed;
-                telemetry.addData("Flywheel target RPM", shooterTargetRpm);
+                leftBumperWasPressed = leftBumperPressed;
+
+                // Gamepad 2: proportional slide power, left trigger up and right trigger down.
+                // Releasing both triggers stops the motor; equal presses cancel each other.
+                slideMotor.setPower(gamepad2.left_trigger - gamepad2.right_trigger);
+
+                // Toggle grabber once per X press, even when the button is held.
+                boolean grabberXPressed = gamepad2.x;
+                if (grabberXPressed && !grabberXWasPressed) {
+                    grabberOpen = !grabberOpen;
+                    grabberServo.setPosition(grabberOpen ? 0.5 : 0.0);
+                }
+                grabberXWasPressed = grabberXPressed;
+
+                // Move the actual turret 60 degrees per press; holding does not repeat.
+                boolean dpadLeftPressed = gamepad1.dpad_left;
+                boolean dpadRightPressed = gamepad1.dpad_right;
+                double turretAdjustment = 0.0;
+                if (dpadLeftPressed && !dpadLeftWasPressed) {
+                    turretAdjustment += TURRET_STEP_DEGREES;
+                }
+                if (dpadRightPressed && !dpadRightWasPressed) {
+                    turretAdjustment -= TURRET_STEP_DEGREES;
+                }
+                moveTurretByDegrees(turretAdjustment);
+                dpadLeftWasPressed = dpadLeftPressed;
+                dpadRightWasPressed = dpadRightPressed;
+                telemetry.addData("Turret target (deg, +left)", turretTargetDegrees);
                 telemetry.addData("Shooter / transfer", shooterRunning ? "On" : "Off");
                 telemetry.update();
             } catch (Exception e) {
@@ -140,10 +162,11 @@ public class TeleOpRed extends InitOpMode {
         drive.leftBack.setPower(0.0);
         drive.rightBack.setPower(0.0);
         intakeMotor.setPower(0.0);
+        slideMotor.setPower(0.0);
         stopperServo.setPosition(STOPPER_CLOSED_POSITION);
         transferMotor.setPower(0.0);
         if (shooterMotor != null) {
-            shooterMotor.setVelocity(0.0);
+            shooterMotor.setPower(0.0);
         }
     }
 }
