@@ -46,6 +46,7 @@ public final class PinpointLocalizer implements Localizer {
         driver.resetPosAndIMU();
 
         txWorldPinpoint = initialPose;
+        driver.recalibrateIMU();
     }
 
     @Override
