@@ -8,11 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.opmode.InitOpMode;
 
-<<<<<<< HEAD
-@Autonomous(name="Auto Red Loading", group = "Iterative OpMode")
-=======
 @Autonomous(name="Auto Red Loading", group = "Auto")
->>>>>>> refs/remotes/origin/master
 public class AutoRedLoading extends InitOpMode{
     public void runOpMode() {
         initialize();
