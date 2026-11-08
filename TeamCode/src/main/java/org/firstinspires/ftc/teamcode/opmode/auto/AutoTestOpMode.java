@@ -17,7 +17,7 @@ public class AutoTestOpMode extends InitOpMode{
         waitForStart();
         if(opModeIsActive()) {
             Action path1 = drive.actionBuilder(initialPose)
-                    .splineTo(new Vector2d(0, 24), Math.toRadians(0))
+                    .splineToConstantHeading(new Vector2d(0, 24), Math.toRadians(0))
                     .build();
             Actions.runBlocking(path1);
         }
