@@ -30,7 +30,7 @@ public class ShooterOpMode extends InitOpMode {
             double error = PIDConstants.TARGET_VELOCITY - currentVelocity;
 
             // Use the built-in motor PIDF controller to set the velocity
-            shooterMotor.setVelocity(PIDConstants.TARGET_VELOCITY);
+            shooterMotor.setVelocity(PIDConstants.TARGET_VELOCITY); // ticks per second
             shooterMotor.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER,new PIDFCoefficients(PIDConstants.KP,PIDConstants.KI,PIDConstants.KD,PIDConstants.KF));
 
             telemetry.addData("Target Velocity", PIDConstants.TARGET_VELOCITY);
