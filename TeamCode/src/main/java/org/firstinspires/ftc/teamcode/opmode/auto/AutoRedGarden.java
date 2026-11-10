@@ -42,8 +42,8 @@ public class AutoRedGarden extends InitOpMode {
                 // Forward, then back, then right. Hold the starting heading.
                 .strafeToConstantHeading(new Vector2d(61, -65), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
-                // Back up 45 inches before the right move.
-                .strafeToConstantHeading(new Vector2d(61, -20), moveSpeed, MOVE_ACCEL)
+                // Back up 49 inches before the right move.
+                .strafeToConstantHeading(new Vector2d(61, -16), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
                 .strafeToConstantHeading(new Vector2d(55, -21), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
