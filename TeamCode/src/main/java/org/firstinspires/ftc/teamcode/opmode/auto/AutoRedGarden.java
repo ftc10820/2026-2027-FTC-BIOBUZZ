@@ -35,35 +35,38 @@ public class AutoRedGarden extends InitOpMode {
                 new TranslationalVelConstraint(MAX_SPEED)
         ));
 
+        // Every destination includes the 5-inch -Y correction. The fixed starting
+        // pose makes the first forward leg 5 inches longer.
         Action path = drive.actionBuilder(initialPose)
                 .waitSeconds(4.0)
                 // Forward, then back, then right. Hold the starting heading.
-                .strafeToConstantHeading(new Vector2d(61, -60), moveSpeed, MOVE_ACCEL)
+                .strafeToConstantHeading(new Vector2d(61, -65), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
-                .strafeToConstantHeading(new Vector2d(61, -10), moveSpeed, MOVE_ACCEL)
+                .strafeToConstantHeading(new Vector2d(61, -15), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
-                .strafeToConstantHeading(new Vector2d(55, -10), moveSpeed, MOVE_ACCEL)
+                .strafeToConstantHeading(new Vector2d(55, -15), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
                 .turn(Math.toRadians(-90))
                 // Now facing -X. Keep this heading through the loading/park zone.
-                .strafeToConstantHeading(new Vector2d(-50, -10), moveSpeed, MOVE_ACCEL)
+                // Stop 2 inches earlier at the second shooting position.
+                .strafeToConstantHeading(new Vector2d(-48, -15), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
                 .waitSeconds(3.0)
-                // Left, then forward.
-                .strafeToConstantHeading(new Vector2d(-50, -25), moveSpeed, MOVE_ACCEL)
+                // Keep the left strafe at the same X, then move forward.
+                .strafeToConstantHeading(new Vector2d(-48, -30), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
-                .strafeToConstantHeading(new Vector2d(-55, -25), moveSpeed, MOVE_ACCEL)
+                .strafeToConstantHeading(new Vector2d(-55, -30), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
                 .waitSeconds(3.0)
                 // Back, then left into the requested loading/park position.
-                .strafeToConstantHeading(new Vector2d(-45, -25), moveSpeed, MOVE_ACCEL)
+                .strafeToConstantHeading(new Vector2d(-45, -30), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
-                .strafeToConstantHeading(new Vector2d(-45, -57), moveSpeed, MOVE_ACCEL)
+                .strafeToConstantHeading(new Vector2d(-45, -62), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
                 .build();
 
         telemetry.addLine("Red Garden: place at (61, -33), facing -Y (-90 deg)");
-        telemetry.addLine("Park target: (-45, -57), facing -X (180 deg)");
+        telemetry.addLine("Park target: (-45, -62), facing -X (180 deg)");
         telemetry.update();
 
         waitForStart();
