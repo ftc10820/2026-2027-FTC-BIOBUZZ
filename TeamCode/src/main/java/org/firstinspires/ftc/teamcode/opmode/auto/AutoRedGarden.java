@@ -1,39 +1,85 @@
 package org.firstinspires.ftc.teamcode.opmode.auto;
 
 import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.AccelConstraint;
+import com.acmerobotics.roadrunner.MinVelConstraint;
 import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.PoseVelocity2d;
+import com.acmerobotics.roadrunner.ProfileAccelConstraint;
+import com.acmerobotics.roadrunner.TranslationalVelConstraint;
+import com.acmerobotics.roadrunner.VelConstraint;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.opmode.InitOpMode;
 
-@Autonomous(name="Shooter OpMode", group = "Auto")
-public class AutoRedGarden extends InitOpMode{
-    public void runOpMode() {
+import java.util.Arrays;
 
+@Autonomous(name = "Auto Red Garden", group = "Auto")
+public class AutoRedGarden extends InitOpMode {
+    // Inches and seconds. Each leg ends at rest, so the profile brakes before its target.
+    private static final double MAX_SPEED = 30.0;
+    private static final AccelConstraint MOVE_ACCEL = new ProfileAccelConstraint(-25.0, 30.0);
+
+    @Override
+    public void runOpMode() {
         initialize();
 
-        // Set the robot's starting position
-        Pose2d initialPose = new Pose2d(-63, 12, Math.toRadians(180));
+        // Field coordinates are (x, y), matching PinpointLocalizer.getPosX/getPosY.
+        // Encoder direction reversal does not swap field axes. At -90 degrees,
+        // forward is -Y and right is -X; after the clockwise turn, forward is -X.
+        Pose2d initialPose = new Pose2d(61, -33, Math.toRadians(-90));
+        VelConstraint moveSpeed = new MinVelConstraint(Arrays.asList(
+                drive.defaultVelConstraint,
+                new TranslationalVelConstraint(MAX_SPEED)
+        ));
+
+        Action path = drive.actionBuilder(initialPose)
+                .waitSeconds(4.0)
+                // Forward, then back, then right. Hold the starting heading.
+                .strafeToConstantHeading(new Vector2d(61, -60), moveSpeed, MOVE_ACCEL)
+                .endTrajectory()
+                .strafeToConstantHeading(new Vector2d(61, -10), moveSpeed, MOVE_ACCEL)
+                .endTrajectory()
+                .strafeToConstantHeading(new Vector2d(55, -10), moveSpeed, MOVE_ACCEL)
+                .endTrajectory()
+                .turn(Math.toRadians(-90))
+                // Now facing -X. Keep this heading through the loading/park zone.
+                .strafeToConstantHeading(new Vector2d(-50, -10), moveSpeed, MOVE_ACCEL)
+                .endTrajectory()
+                .waitSeconds(3.0)
+                // Left, then forward.
+                .strafeToConstantHeading(new Vector2d(-50, -25), moveSpeed, MOVE_ACCEL)
+                .endTrajectory()
+                .strafeToConstantHeading(new Vector2d(-55, -25), moveSpeed, MOVE_ACCEL)
+                .endTrajectory()
+                .waitSeconds(3.0)
+                // Back, then left into the requested loading/park position.
+                .strafeToConstantHeading(new Vector2d(-45, -25), moveSpeed, MOVE_ACCEL)
+                .endTrajectory()
+                .strafeToConstantHeading(new Vector2d(-45, -57), moveSpeed, MOVE_ACCEL)
+                .endTrajectory()
+                .build();
+
+        telemetry.addLine("Red Garden: place at (61, -33), facing -Y (-90 deg)");
+        telemetry.addLine("Park target: (-45, -57), facing -X (180 deg)");
+        telemetry.update();
 
         waitForStart();
+        if (isStopRequested()) {
+            return;
+        }
 
-        if (opModeIsActive()) {
+        // initialize() creates the localizer at (0, 0, 0). Re-anchor its latest
+        // reading here so moving the robot during INIT does not offset the route.
+        drive.updatePoseEstimate();
+        drive.localizer.setPose(initialPose);
 
-            Action path1 = drive.actionBuilder(initialPose)
-                    // TODO: shoot
-                    .splineTo(new Vector2d(-58, 63), Math.PI)
-                    // TODO: Intake
-                    .splineTo(new Vector2d(-63, 63), Math.PI)
-                    // TODO: off intake
-                    .splineTo(new Vector2d(63, 63),Math.toRadians(0))
-                    // TODO: aim
-                    // TODO: shoot
-                    .splineTo(new Vector2d(20, 63), Math.toRadians(0))
-                    .build();
-
-            Actions.runBlocking(path1);
+        try {
+            Actions.runBlocking(packet -> opModeIsActive() && path.run(packet));
+        } finally {
+            drive.setDrivePowers(new PoseVelocity2d(new Vector2d(0, 0), 0));
         }
     }
 }
