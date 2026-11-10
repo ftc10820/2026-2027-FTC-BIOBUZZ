@@ -42,27 +42,27 @@ public class AutoRedGarden extends InitOpMode {
                 // Forward, then back, then right. Hold the starting heading.
                 .strafeToConstantHeading(new Vector2d(61, -65), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
-                // Back up 49 inches before the right move.
-                .strafeToConstantHeading(new Vector2d(61, -16), moveSpeed, MOVE_ACCEL)
+                // Move 8 inches farther back, toward the blue hive.
+                .strafeToConstantHeading(new Vector2d(61, -12), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
-                .strafeToConstantHeading(new Vector2d(55, -21), moveSpeed, MOVE_ACCEL)
+                .strafeToConstantHeading(new Vector2d(55, -13), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
                 .turn(Math.toRadians(-90))
                 // Now facing -X. Keep this heading through the loading/park zone.
                 // Stop 2 inches earlier at the second shooting position.
-                .strafeToConstantHeading(new Vector2d(-48, -21), moveSpeed, MOVE_ACCEL)
+                .strafeToConstantHeading(new Vector2d(-48, -13), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
                 .waitSeconds(3.0)
                 // Strafe left 4 inches farther (13 inches total), then move forward.
-                .strafeToConstantHeading(new Vector2d(-48, -34), moveSpeed, MOVE_ACCEL)
+                .strafeToConstantHeading(new Vector2d(-48, -26), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
-                .strafeToConstantHeading(new Vector2d(-55, -34), moveSpeed, MOVE_ACCEL)
+                .strafeToConstantHeading(new Vector2d(-55, -26), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
                 .waitSeconds(3.0)
                 // Back, then left into the requested loading/park position.
-                .strafeToConstantHeading(new Vector2d(-45, -34), moveSpeed, MOVE_ACCEL)
+                .strafeToConstantHeading(new Vector2d(-45, -26), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
-                // Strafe left 3 inches farther (35 inches from the shifted Y=-34).
+                // Finish the left strafe at the existing loading/park endpoint.
                 .strafeToConstantHeading(new Vector2d(-45, -69), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
                 .build();
