@@ -53,8 +53,8 @@ public class AutoRedGarden extends InitOpMode {
                 .strafeToConstantHeading(new Vector2d(-48, -13), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
                 .waitSeconds(3.0)
-                // Strafe left 4 inches farther (13 inches total), then move forward.
-                .strafeToConstantHeading(new Vector2d(-48, -26), moveSpeed, MOVE_ACCEL)
+                // Strafe left 4 inches farther, then move forward.
+                .strafeToConstantHeading(new Vector2d(-48, -30), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
                 .strafeToConstantHeading(new Vector2d(-55, -26), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
