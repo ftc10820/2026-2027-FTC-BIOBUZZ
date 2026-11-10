@@ -134,8 +134,8 @@ public class TeleOpBlue extends InitOpMode {
                 grabberXWasPressed = grabberXPressed;
 
                 // Move the actual turret 60 degrees per press; holding does not repeat.
-                boolean dpadLeftPressed = gamepad1.dpad_left;
-                boolean dpadRightPressed = gamepad1.dpad_right;
+                boolean dpadLeftPressed = gamepad2.dpad_left;
+                boolean dpadRightPressed = gamepad2.dpad_right;
                 double turretAdjustment = 0.0;
                 if (dpadLeftPressed && !dpadLeftWasPressed) {
                     turretAdjustment += TURRET_STEP_DEGREES;
