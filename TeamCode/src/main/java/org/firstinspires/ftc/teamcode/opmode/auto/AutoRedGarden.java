@@ -42,14 +42,15 @@ public class AutoRedGarden extends InitOpMode {
                 // Forward, then back, then right. Hold the starting heading.
                 .strafeToConstantHeading(new Vector2d(61, -65), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
-                .strafeToConstantHeading(new Vector2d(61, -15), moveSpeed, MOVE_ACCEL)
+                // Back up 6 inches less; hold this Y through the turn and crossing.
+                .strafeToConstantHeading(new Vector2d(61, -21), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
-                .strafeToConstantHeading(new Vector2d(55, -15), moveSpeed, MOVE_ACCEL)
+                .strafeToConstantHeading(new Vector2d(55, -21), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
                 .turn(Math.toRadians(-90))
                 // Now facing -X. Keep this heading through the loading/park zone.
                 // Stop 2 inches earlier at the second shooting position.
-                .strafeToConstantHeading(new Vector2d(-48, -15), moveSpeed, MOVE_ACCEL)
+                .strafeToConstantHeading(new Vector2d(-48, -21), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
                 .waitSeconds(3.0)
                 // Keep the left strafe at the same X, then move forward.
