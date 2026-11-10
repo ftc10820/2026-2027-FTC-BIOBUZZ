@@ -53,8 +53,8 @@ public class AutoRedGarden extends InitOpMode {
                 .strafeToConstantHeading(new Vector2d(-48, -13), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
                 .waitSeconds(3.0)
-                // Strafe left 4 inches farther, then move forward.
-                .strafeToConstantHeading(new Vector2d(-48, -30), moveSpeed, MOVE_ACCEL)
+                // Strafe left, then move forward.
+                .strafeToConstantHeading(new Vector2d(-48, -26), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
                 .strafeToConstantHeading(new Vector2d(-55, -26), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
@@ -63,12 +63,12 @@ public class AutoRedGarden extends InitOpMode {
                 .strafeToConstantHeading(new Vector2d(-45, -26), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
                 // Finish the left strafe at the existing loading/park endpoint.
-                .strafeToConstantHeading(new Vector2d(-45, -69), moveSpeed, MOVE_ACCEL)
+                .strafeToConstantHeading(new Vector2d(-45, -60), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
                 .build();
 
         telemetry.addLine("Red Garden: place at (61, -33), facing -Y (-90 deg)");
-        telemetry.addLine("Park target: (-45, -69), facing -X (180 deg)");
+        telemetry.addLine("Park target: (-45, -60), facing -X (180 deg)");
         telemetry.update();
 
         waitForStart();
