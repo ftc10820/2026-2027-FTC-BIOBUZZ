@@ -72,6 +72,9 @@ public class TeleOpBlue extends InitOpMode {
         // Require a fresh X press so a held button cannot immediately reopen it.
         grabberXWasPressed = gamepad2.x;
 
+        double shooterActualRpm = 0.0;
+        long lastShooterRpmSampleNs = System.nanoTime() - SHOOTER_RPM_SAMPLE_INTERVAL_NS;
+
         while (opModeIsActive()) {
             try {
                 double max;
@@ -168,6 +171,19 @@ public class TeleOpBlue extends InitOpMode {
                 telemetry.addData("Turret target (deg, +left)", turretTargetDegrees);
                 telemetry.addData("Shooter / transfer", shooterRunning ? "On" : "Off");
                 telemetry.addData("Shooter target (RPM)", shooterTargetRpm);
+                telemetry.addData("G2 shooter D-pad", "up=%s down=%s",
+                        dpadUpPressed, dpadDownPressed);
+                if (shooterMotor != null) {
+                    // Sample shooter shaft RPM once per second without delaying the controls.
+                    if (nowNs - lastShooterRpmSampleNs >= SHOOTER_RPM_SAMPLE_INTERVAL_NS) {
+                        shooterActualRpm = shooterMotor.getVelocity() * 60.0
+                                / PIDConstants.TICKS_PER_REVOLUTION;
+                        lastShooterRpmSampleNs = nowNs;
+                    }
+                    telemetry.addData("Shooter actual (RPM)", "%.0f", shooterActualRpm);
+                } else {
+                    telemetry.addLine("Shooter motor not configured");
+                }
                 telemetry.update();
             } catch (Exception e) {
               handleExpection(e);

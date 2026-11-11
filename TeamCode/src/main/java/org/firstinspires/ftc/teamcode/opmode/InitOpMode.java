@@ -32,10 +32,11 @@ public abstract class InitOpMode extends LinearOpMode {
 
     protected static final double STOPPER_CLOSED_POSITION = 0.0;
     protected static final double STOPPER_OPEN_POSITION = 0.2;
-    // Shooter shaft RPM; the 2:1 reduction means 2250 here commands 4500 motor RPM.
-    protected static final double SHOOTER_START_RPM = 2250.0;
+    // Shooter shaft RPM; the 2:1 reduction means 1750 here commands 3500 motor RPM.
+    protected static final double SHOOTER_START_RPM = 1750.0;
     protected static final double SHOOTER_RPM_STEP = 250.0;
     protected static final double SHOOTER_MIN_RPM = 250.0;
+    protected static final long SHOOTER_RPM_SAMPLE_INTERVAL_NS = 1_000_000_000L;
 
     // Stock goBILDA 3208-0004-0001 turret: 2.75 servo turns per turret turn.
     // https://www.gobilda.com/gear-driven-turret-2-75-1-ratio-105mm-id/
