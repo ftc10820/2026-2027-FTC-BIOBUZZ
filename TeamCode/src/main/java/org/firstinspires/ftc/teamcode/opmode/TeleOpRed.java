@@ -51,7 +51,7 @@ public class TeleOpRed extends InitOpMode {
         initializeTurret();
 
         boolean shooterRunning = false;
-        double shooterTargetRpm = 900.0;
+        double shooterTargetRpm = SHOOTER_START_RPM;
         boolean dpadUpWasPressed = false;
         boolean dpadDownWasPressed = false;
         boolean stopperOpen = false;
@@ -109,10 +109,11 @@ public class TeleOpRed extends InitOpMode {
                 boolean dpadUpPressed = gamepad2.dpad_up;
                 boolean dpadDownPressed = gamepad2.dpad_down;
                 if (dpadUpPressed && !dpadUpWasPressed) {
-                    shooterTargetRpm += 250.0;
+                    shooterTargetRpm += SHOOTER_RPM_STEP;
                 }
                 if (dpadDownPressed && !dpadDownWasPressed) {
-                    shooterTargetRpm = Math.max(0.0, shooterTargetRpm - 250.0);
+                    shooterTargetRpm = Math.max(SHOOTER_MIN_RPM,
+                            shooterTargetRpm - SHOOTER_RPM_STEP);
                 }
                 dpadUpWasPressed = dpadUpPressed;
                 dpadDownWasPressed = dpadDownPressed;
