@@ -33,7 +33,7 @@ public abstract class InitOpMode extends LinearOpMode {
     protected static final double STOPPER_CLOSED_POSITION = 0.0;
     protected static final double STOPPER_OPEN_POSITION = 0.2;
     protected static final double GRABBER_INIT_POSITION = 0.1;
-    protected static final double GRABBER_CLOSED_POSITION = 0.13;
+    protected static final double GRABBER_CLOSED_POSITION = 0.12;
     // Shooter shaft RPM; the 2:1 reduction means 1750 here commands 3500 motor RPM.
     protected static final double SHOOTER_START_RPM = 1750.0;
     protected static final double SHOOTER_RPM_STEP = 250.0;
