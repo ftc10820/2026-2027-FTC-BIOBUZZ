@@ -32,6 +32,7 @@ public abstract class InitOpMode extends LinearOpMode {
 
     protected static final double STOPPER_CLOSED_POSITION = 0.0;
     protected static final double STOPPER_OPEN_POSITION = 0.2;
+    protected static final double GRABBER_CLOSED_POSITION = 0.2;
     // Shooter shaft RPM; the 2:1 reduction means 1750 here commands 3500 motor RPM.
     protected static final double SHOOTER_START_RPM = 1750.0;
     protected static final double SHOOTER_RPM_STEP = 250.0;
@@ -89,7 +90,7 @@ public abstract class InitOpMode extends LinearOpMode {
         flowerRampServo.setPosition(0.5);
 
         grabberServo = hardwareMap.get(Servo.class, "grabberServo");
-        grabberServo.setPosition(0.1);
+        grabberServo.setPosition(GRABBER_CLOSED_POSITION);
 
         slideMotor = hardwareMap.get(DcMotor.class, "slideMotor");
         slideMotor.setPower(0.0);

@@ -70,7 +70,7 @@ public class TeleOpRed extends InitOpMode {
         }
 
         // Reapply the closed position on START as well as during INIT.
-        grabberServo.setPosition(0.1);
+        grabberServo.setPosition(GRABBER_CLOSED_POSITION);
         grabberOpen = false;
         // Require a fresh X press so a held button cannot immediately reopen it.
         grabberXWasPressed = gamepad2.x;
@@ -152,7 +152,7 @@ public class TeleOpRed extends InitOpMode {
                 boolean grabberXPressed = gamepad2.x;
                 if (grabberXPressed && !grabberXWasPressed) {
                     grabberOpen = !grabberOpen;
-                    grabberServo.setPosition(grabberOpen ? 0.5 : 0.0);
+                    grabberServo.setPosition(grabberOpen ? 0.5 : GRABBER_CLOSED_POSITION);
                 }
                 grabberXWasPressed = grabberXPressed;
 
