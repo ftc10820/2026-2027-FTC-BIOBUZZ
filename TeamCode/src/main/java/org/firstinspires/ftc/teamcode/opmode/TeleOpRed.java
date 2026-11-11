@@ -69,8 +69,8 @@ public class TeleOpRed extends InitOpMode {
             return;
         }
 
-        // Reapply the closed position on START as well as during INIT.
-        grabberServo.setPosition(GRABBER_CLOSED_POSITION);
+        // Reapply the initial position on START as well as during INIT.
+        grabberServo.setPosition(GRABBER_INIT_POSITION);
         grabberOpen = false;
         // Require a fresh X press so a held button cannot immediately reopen it.
         grabberXWasPressed = gamepad2.x;
