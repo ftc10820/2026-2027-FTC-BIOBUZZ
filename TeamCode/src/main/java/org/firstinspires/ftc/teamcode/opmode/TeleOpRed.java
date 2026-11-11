@@ -33,6 +33,7 @@ import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import org.firstinspires.ftc.teamcode.PIDConstants;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -45,19 +46,21 @@ public class TeleOpRed extends InitOpMode {
     public void runOpMode() {
         initialize();
         if (shooterMotor != null) {
-            // Full-power on/off control is specific to this TeleOp.
-            shooterMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            shooterMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
         initializeTurret();
 
         boolean shooterRunning = false;
+        double shooterTargetRpm = 900.0;
+        boolean dpadUpWasPressed = false;
+        boolean dpadDownWasPressed = false;
         boolean stopperOpen = false;
         boolean yWasPressed = false;
         boolean rightBumperWasPressed = false;
         boolean flowerRampAtPositionHalf = true;
         boolean leftBumperWasPressed = false;
-        boolean dpadLeftWasPressed = false;
-        boolean dpadRightWasPressed = false;
+        int previousTurretDirection = 0;
+        long nextTurretStepTimeNs = 0;
         boolean grabberOpen = false;
         boolean grabberXWasPressed = false;
 
@@ -102,9 +105,22 @@ public class TeleOpRed extends InitOpMode {
                 }
                 rightBumperWasPressed = rightBumperPressed;
 
+                // Adjust the shooter target once per D-pad press, including while stopped.
+                boolean dpadUpPressed = gamepad2.dpad_up;
+                boolean dpadDownPressed = gamepad2.dpad_down;
+                if (dpadUpPressed && !dpadUpWasPressed) {
+                    shooterTargetRpm += 250.0;
+                }
+                if (dpadDownPressed && !dpadDownWasPressed) {
+                    shooterTargetRpm = Math.max(0.0, shooterTargetRpm - 250.0);
+                }
+                dpadUpWasPressed = dpadUpPressed;
+                dpadDownWasPressed = dpadDownPressed;
+
                 transferMotor.setPower(shooterRunning ? 1.0 : 0.0);
                 if (shooterMotor != null) {
-                    shooterMotor.setPower(shooterRunning ? 1.0 : 0.0);
+                    shooterMotor.setVelocity(shooterRunning
+                            ? PIDConstants.rpmToTicks(shooterTargetRpm) : 0.0);
                 }
 
                 // Toggle the stopper once per Y press, independently of the shooter.
@@ -136,21 +152,24 @@ public class TeleOpRed extends InitOpMode {
                 }
                 grabberXWasPressed = grabberXPressed;
 
-                // Move the actual turret 60 degrees per press; holding does not repeat.
-                boolean dpadLeftPressed = gamepad2.dpad_left;
-                boolean dpadRightPressed = gamepad2.dpad_right;
-                double turretAdjustment = 0.0;
-                if (dpadLeftPressed && !dpadLeftWasPressed) {
-                    turretAdjustment += TURRET_STEP_DEGREES;
+                // Step immediately, then every 100 ms while held. Opposite inputs cancel.
+                int turretDirection = (gamepad2.dpad_left ? 1 : 0)
+                        - (gamepad2.dpad_right ? 1 : 0);
+                if (turretDirection != previousTurretDirection) {
+                    nextTurretStepTimeNs = 0;
                 }
-                if (dpadRightPressed && !dpadRightWasPressed) {
-                    turretAdjustment -= TURRET_STEP_DEGREES;
+                long nowNs = System.nanoTime();
+                if (turretDirection != 0 && nowNs >= nextTurretStepTimeNs) {
+                    if (Math.abs(turretTargetDegrees + turretDirection * TURRET_STEP_DEGREES)
+                            <= TURRET_MAX_ANGLE_DEGREES) {
+                        moveTurretByDegrees(turretDirection * TURRET_STEP_DEGREES);
+                    }
+                    nextTurretStepTimeNs = nowNs + TURRET_REPEAT_INTERVAL_NS;
                 }
-                moveTurretByDegrees(turretAdjustment);
-                dpadLeftWasPressed = dpadLeftPressed;
-                dpadRightWasPressed = dpadRightPressed;
+                previousTurretDirection = turretDirection;
                 telemetry.addData("Turret target (deg, +left)", turretTargetDegrees);
                 telemetry.addData("Shooter / transfer", shooterRunning ? "On" : "Off");
+                telemetry.addData("Shooter target (RPM)", shooterTargetRpm);
                 telemetry.update();
             } catch (Exception e) {
                handleExpection(e);
