@@ -83,7 +83,7 @@ public abstract class InitOpMode extends LinearOpMode {
         flowerRampServo.setPosition(0.5);
 
         grabberServo = hardwareMap.get(Servo.class, "grabberServo");
-        grabberServo.setPosition(0.0);
+        grabberServo.setPosition(0.1);
 
         slideMotor = hardwareMap.get(DcMotor.class, "slideMotor");
         slideMotor.setPower(0.0);

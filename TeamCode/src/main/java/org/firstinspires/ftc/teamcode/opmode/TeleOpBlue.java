@@ -64,7 +64,7 @@ public class TeleOpBlue extends InitOpMode {
         }
 
         // Reapply the closed position on START as well as during INIT.
-        grabberServo.setPosition(0.0);
+        grabberServo.setPosition(0.1);
         grabberOpen = false;
         // Require a fresh X press so a held button cannot immediately reopen it.
         grabberXWasPressed = gamepad2.x;
