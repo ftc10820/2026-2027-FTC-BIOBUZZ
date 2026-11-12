@@ -83,7 +83,7 @@ public class AutoRedGarden extends InitOpMode {
                     }
                     transferMotor.setPower(1.0);
                     // TeleOp's helper applies the turret gearing; negative is clockwise from above.
-                    moveTurretByDegrees(-120.0);
+                    moveTurretByDegrees(-100.0);
                     return false;
                 },
                 new SleepAction(3.0),
