@@ -28,18 +28,10 @@ public class AutoRedGarden extends InitOpMode {
 
     @Override
     public void runOpMode() {
+        // initialize() holds the gate up/closed and stops the shooter and transfer.
         initialize();
+        intakeMotor.setPower(0.0);
         initializeTurret();
-        // Match TeleOp's right D-pad motion: twelve 10-degree steps, 100 ms apart.
-        for (int step = 0; step < 12 && !isStopRequested(); step++) {
-            moveTurretByDegrees(-TURRET_STEP_DEGREES);
-            telemetry.addData("Turret target (deg, +left)", turretTargetDegrees);
-            telemetry.addData("Turret servo command", "%.3f", getTurretCommandedPosition());
-            telemetry.update();
-            if (step < 11) {
-                sleep(TURRET_REPEAT_INTERVAL_NS / 1_000_000L);
-            }
-        }
 
         // Field coordinates are (x, y), matching PinpointLocalizer.getPosX/getPosY.
         // Encoder direction reversal does not swap field axes. At -90 degrees,
@@ -82,9 +74,33 @@ public class AutoRedGarden extends InitOpMode {
                 .endTrajectory()
                 .build();
 
+        Action shooting = new SequentialAction(
+                packet -> {
+                    // These commands return immediately, so all three mechanisms move together.
+                    // TeleOp's conversion includes the 2:1 reduction: 2000 shooter RPM = 4000 motor RPM.
+                    if (shooterMotor != null) {
+                        shooterMotor.setVelocity(PIDConstants.rpmToTicks(2000.0));
+                    }
+                    transferMotor.setPower(1.0);
+                    // TeleOp's helper applies the turret gearing; negative is clockwise from above.
+                    moveTurretByDegrees(-120.0);
+                    return false;
+                },
+                new SleepAction(3.0),
+                packet -> {
+                    stopperServo.setPosition(STOPPER_OPEN_POSITION);
+                    intakeMotor.setPower(1.0);
+                    return false;
+                },
+                new SleepAction(5.0),
+                packet -> {
+                    intakeMotor.setPower(0.0);
+                    return false;
+                }
+        );
+        Action auto = new ParallelAction(shooting, path);
+
         telemetry.addLine("Red Garden: place at (61, -33), facing -Y (-90 deg)");
-        telemetry.addData("Turret target (deg, +left)", turretTargetDegrees);
-        telemetry.addData("Turret servo command", "%.3f", getTurretCommandedPosition());
         telemetry.addLine("Park target: (-45, -60), facing -X (180 deg)");
         telemetry.update();
 
@@ -99,22 +115,11 @@ public class AutoRedGarden extends InitOpMode {
         drive.localizer.setPose(initialPose);
 
         try {
-            if (shooterMotor != null) {
-                shooterMotor.setVelocity(PIDConstants.rpmToTicks(2000.0));
-            }
-            Action startup = new SequentialAction(
-                    new SleepAction(3.0),
-                    packet -> {
-                        stopperServo.setPosition(STOPPER_OPEN_POSITION);
-                        intakeMotor.setPower(1.0);
-                        return false;
-                    }
-            );
-            Action auto = new ParallelAction(path, startup);
             Actions.runBlocking(packet -> opModeIsActive() && auto.run(packet));
         } finally {
             drive.setDrivePowers(new PoseVelocity2d(new Vector2d(0, 0), 0));
             intakeMotor.setPower(0.0);
+            transferMotor.setPower(0.0);
             if (shooterMotor != null) {
                 shooterMotor.setVelocity(0.0);
             }

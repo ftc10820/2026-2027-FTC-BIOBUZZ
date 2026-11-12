@@ -120,7 +120,7 @@ public abstract class InitOpMode extends LinearOpMode {
     }
 
     /**
-     * Called before waitForStart(). Configure the connected Hub servo port
+     * Called by TeleOp before waitForStart(). Configure the connected Hub servo port
      * as "turretServo". Mechanically align the turret forward at position 0.5.
      */
     protected void initializeTurret() {
@@ -131,10 +131,6 @@ public abstract class InitOpMode extends LinearOpMode {
         turretServo.setPosition(TURRET_CENTER_POSITION);
         telemetry.addData("Turret target (deg, +left)", turretTargetDegrees);
         telemetry.update();
-    }
-
-    protected double getTurretCommandedPosition() {
-        return turretServo.getPosition();
     }
 
     /**
