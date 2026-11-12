@@ -3,15 +3,19 @@ package org.firstinspires.ftc.teamcode.opmode.auto;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.AccelConstraint;
 import com.acmerobotics.roadrunner.MinVelConstraint;
+import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.ProfileAccelConstraint;
+import com.acmerobotics.roadrunner.SequentialAction;
+import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.TranslationalVelConstraint;
 import com.acmerobotics.roadrunner.VelConstraint;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
+import org.firstinspires.ftc.teamcode.PIDConstants;
 import org.firstinspires.ftc.teamcode.opmode.InitOpMode;
 
 import java.util.Arrays;
@@ -25,6 +29,8 @@ public class AutoRedGarden extends InitOpMode {
     @Override
     public void runOpMode() {
         initialize();
+        initializeTurret();
+        moveTurretByDegrees(-120.0);
 
         // Field coordinates are (x, y), matching PinpointLocalizer.getPosX/getPosY.
         // Encoder direction reversal does not swap field axes. At -90 degrees,
@@ -38,7 +44,7 @@ public class AutoRedGarden extends InitOpMode {
         // Every destination includes the 5-inch -Y correction. The fixed starting
         // pose makes the first forward leg 5 inches longer.
         Action path = drive.actionBuilder(initialPose)
-                .waitSeconds(4.0)
+                .waitSeconds(5.0)
                 // Forward, then back, then right. Hold the starting heading.
                 .strafeToConstantHeading(new Vector2d(61, -65), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
@@ -82,9 +88,25 @@ public class AutoRedGarden extends InitOpMode {
         drive.localizer.setPose(initialPose);
 
         try {
-            Actions.runBlocking(packet -> opModeIsActive() && path.run(packet));
+            if (shooterMotor != null) {
+                shooterMotor.setVelocity(PIDConstants.rpmToTicks(2000.0));
+            }
+            Action startup = new SequentialAction(
+                    new SleepAction(3.0),
+                    packet -> {
+                        stopperServo.setPosition(STOPPER_OPEN_POSITION);
+                        intakeMotor.setPower(1.0);
+                        return false;
+                    }
+            );
+            Action auto = new ParallelAction(path, startup);
+            Actions.runBlocking(packet -> opModeIsActive() && auto.run(packet));
         } finally {
             drive.setDrivePowers(new PoseVelocity2d(new Vector2d(0, 0), 0));
+            intakeMotor.setPower(0.0);
+            if (shooterMotor != null) {
+                shooterMotor.setVelocity(0.0);
+            }
         }
     }
 }
