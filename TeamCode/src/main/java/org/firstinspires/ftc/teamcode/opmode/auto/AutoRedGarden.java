@@ -30,7 +30,16 @@ public class AutoRedGarden extends InitOpMode {
     public void runOpMode() {
         initialize();
         initializeTurret();
-        moveTurretByDegrees(-120.0);
+        // Match TeleOp's right D-pad motion: twelve 10-degree steps, 100 ms apart.
+        for (int step = 0; step < 12 && !isStopRequested(); step++) {
+            moveTurretByDegrees(-TURRET_STEP_DEGREES);
+            telemetry.addData("Turret target (deg, +left)", turretTargetDegrees);
+            telemetry.addData("Turret servo command", "%.3f", getTurretCommandedPosition());
+            telemetry.update();
+            if (step < 11) {
+                sleep(TURRET_REPEAT_INTERVAL_NS / 1_000_000L);
+            }
+        }
 
         // Field coordinates are (x, y), matching PinpointLocalizer.getPosX/getPosY.
         // Encoder direction reversal does not swap field axes. At -90 degrees,
@@ -74,6 +83,8 @@ public class AutoRedGarden extends InitOpMode {
                 .build();
 
         telemetry.addLine("Red Garden: place at (61, -33), facing -Y (-90 deg)");
+        telemetry.addData("Turret target (deg, +left)", turretTargetDegrees);
+        telemetry.addData("Turret servo command", "%.3f", getTurretCommandedPosition());
         telemetry.addLine("Park target: (-45, -60), facing -X (180 deg)");
         telemetry.update();
 
