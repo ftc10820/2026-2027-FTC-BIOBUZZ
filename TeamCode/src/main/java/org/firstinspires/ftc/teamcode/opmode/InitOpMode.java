@@ -8,6 +8,7 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.qualcomm.robotcore.hardware.PwmControl;
@@ -17,6 +18,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
+import org.firstinspires.ftc.teamcode.PIDConstants;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -106,6 +108,7 @@ public abstract class InitOpMode extends LinearOpMode {
             shooterMotor.setDirection(DcMotor.Direction.REVERSE);
             // Preserve encoder velocity control for PID tuning and TeleOp speed adjustment.
             shooterMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            shooterMotor.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER,new PIDFCoefficients(PIDConstants.KP,PIDConstants.KI,PIDConstants.KD,PIDConstants.KF));
             shooterMotor.setVelocity(0.0);
         }
 
@@ -157,6 +160,10 @@ public abstract class InitOpMode extends LinearOpMode {
         turretTargetDegrees = nextTargetDegrees;
     }
 
+    protected double getCurrentTurretPositionInDegrees() {
+        double pos = turretServo.getPosition();
+        return (pos - TURRET_CENTER_POSITION) * TURRET_SERVO_TRAVEL_DEGREES / TURRET_GEAR_RATIO;
+    }
     //region Limelight 3A
 
     /*
