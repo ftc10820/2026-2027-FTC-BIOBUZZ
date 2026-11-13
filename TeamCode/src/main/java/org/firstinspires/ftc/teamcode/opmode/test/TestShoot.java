@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmode.test;
 
+import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.ftc.Actions;
@@ -17,10 +18,14 @@ public class TestShoot extends TestBaseOpMode {
         waitForStart();
         if (opModeIsActive()) {
             Actions.runBlocking(
-                    new SequentialAction(
-                        // Set shooter speed
-                        p -> { updateShooter(); return isAtSpeed(); },
-                            new SleepAction(10) // wait 10 seconds
+                    new ParallelAction(
+                            p -> { p.put("shooterRpm",PIDConstants.ticksToRpm(shooterMotor.getVelocity())); return false; },
+                            new SequentialAction(
+                                // Set shooter speed
+                                p -> { updateShooter(); return isAtSpeed(); },
+                                p -> { intakeMotor.setPower(1); return false; },
+                                new SleepAction(10) // wait 10 seconds
+                            )
                     )
                 );
         }
