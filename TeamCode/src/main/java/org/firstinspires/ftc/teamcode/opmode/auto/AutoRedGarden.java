@@ -45,7 +45,7 @@ public class AutoRedGarden extends InitOpMode {
         // Every destination includes the 5-inch -Y correction. The fixed starting
         // pose makes the first forward leg 5 inches longer.
         Action path = drive.actionBuilder(initialPose)
-                .waitSeconds(5.0)
+                .waitSeconds(6.0)
                 // Forward, then back, then right. Hold the starting heading.
                 .strafeToConstantHeading(new Vector2d(61, -65), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
@@ -79,7 +79,7 @@ public class AutoRedGarden extends InitOpMode {
                     // These commands return immediately, so all three mechanisms move together.
                     // TeleOp's conversion includes the 2:1 reduction: 2000 shooter RPM = 4000 motor RPM.
                     if (shooterMotor != null) {
-                        shooterMotor.setVelocity(PIDConstants.rpmToTicks(1750.0));
+                        shooterMotor.setVelocity(PIDConstants.rpmToTicks(1700.0));
                     }
                     transferMotor.setPower(1.0);
                     // TeleOp's helper applies the turret gearing; negative is clockwise from above.
