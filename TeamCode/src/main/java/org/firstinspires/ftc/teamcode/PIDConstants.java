@@ -20,4 +20,12 @@ public class PIDConstants {
     public static double rpsToTicks(double rps) {
         return rps * PIDConstants.TICKS_PER_REVOLUTION;
     }
+
+    public static double ticksToRpm(double ticks) {
+        return ticks / PIDConstants.TICKS_PER_REVOLUTION;
+    }
+
+    public static double ticksToRps(double ticks) {
+        return ticks * 60 / PIDConstants.TICKS_PER_REVOLUTION;
+    }
 }
