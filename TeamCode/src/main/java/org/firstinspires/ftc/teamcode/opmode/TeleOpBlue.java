@@ -33,6 +33,7 @@ import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import org.firstinspires.ftc.teamcode.PIDConstants;
 
 // Drive loop copied from the FTC SDK sample BasicOmniOpMode_Linear.
 // Uses our shared hardware initialization and adds intake, shooter, transfer, and flower ramp controls.
@@ -42,19 +43,21 @@ public class TeleOpBlue extends InitOpMode {
     public void runOpMode() {
         initialize();
         if (shooterMotor != null) {
-            // Full-power on/off control is specific to this TeleOp.
-            shooterMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            shooterMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
         initializeTurret();
 
         boolean shooterRunning = false;
+        double shooterTargetRpm = SHOOTER_START_RPM;
+        boolean dpadUpWasPressed = false;
+        boolean dpadDownWasPressed = false;
         boolean stopperOpen = false;
         boolean yWasPressed = false;
         boolean rightBumperWasPressed = false;
         boolean flowerRampAtPositionHalf = true;
         boolean leftBumperWasPressed = false;
-        boolean dpadLeftWasPressed = false;
-        boolean dpadRightWasPressed = false;
+        int previousTurretDirection = 0;
+        long nextTurretStepTimeNs = 0;
         boolean grabberOpen = false;
         boolean grabberXWasPressed = false;
 
@@ -63,11 +66,14 @@ public class TeleOpBlue extends InitOpMode {
             return;
         }
 
-        // Reapply the closed position on START as well as during INIT.
-        grabberServo.setPosition(0.0);
+        // Reapply the initial position on START as well as during INIT.
+        grabberServo.setPosition(GRABBER_INIT_POSITION);
         grabberOpen = false;
         // Require a fresh X press so a held button cannot immediately reopen it.
         grabberXWasPressed = gamepad2.x;
+
+        double shooterActualRpm = 0.0;
+        long lastShooterRpmSampleNs = System.nanoTime() - SHOOTER_RPM_SAMPLE_INTERVAL_NS;
 
         while (opModeIsActive()) {
             try {
@@ -99,9 +105,23 @@ public class TeleOpBlue extends InitOpMode {
                 }
                 rightBumperWasPressed = rightBumperPressed;
 
+                // Adjust the shooter target once per D-pad press, including while stopped.
+                boolean dpadUpPressed = gamepad2.dpad_up;
+                boolean dpadDownPressed = gamepad2.dpad_down;
+                if (dpadUpPressed && !dpadUpWasPressed) {
+                    shooterTargetRpm += SHOOTER_RPM_STEP;
+                }
+                if (dpadDownPressed && !dpadDownWasPressed) {
+                    shooterTargetRpm = Math.max(SHOOTER_MIN_RPM,
+                            shooterTargetRpm - SHOOTER_RPM_STEP);
+                }
+                dpadUpWasPressed = dpadUpPressed;
+                dpadDownWasPressed = dpadDownPressed;
+
                 transferMotor.setPower(shooterRunning ? 1.0 : 0.0);
                 if (shooterMotor != null) {
-                    shooterMotor.setPower(shooterRunning ? 1.0 : 0.0);
+                    shooterMotor.setVelocity(shooterRunning
+                            ? PIDConstants.rpmToTicks(shooterTargetRpm) : 0.0);
                 }
 
                 // Toggle the stopper once per Y press, independently of the shooter.
@@ -129,25 +149,41 @@ public class TeleOpBlue extends InitOpMode {
                 boolean grabberXPressed = gamepad2.x;
                 if (grabberXPressed && !grabberXWasPressed) {
                     grabberOpen = !grabberOpen;
-                    grabberServo.setPosition(grabberOpen ? 0.5 : 0.0);
+                    grabberServo.setPosition(grabberOpen ? 0.5 : GRABBER_CLOSED_POSITION);
                 }
                 grabberXWasPressed = grabberXPressed;
 
-                // Move the actual turret 60 degrees per press; holding does not repeat.
-                boolean dpadLeftPressed = gamepad1.dpad_left;
-                boolean dpadRightPressed = gamepad1.dpad_right;
-                double turretAdjustment = 0.0;
-                if (dpadLeftPressed && !dpadLeftWasPressed) {
-                    turretAdjustment += TURRET_STEP_DEGREES;
+                // Step immediately, then every 100 ms while held. Opposite inputs cancel.
+                int turretDirection = (gamepad2.dpad_left ? 1 : 0)
+                        - (gamepad2.dpad_right ? 1 : 0);
+                if (turretDirection != previousTurretDirection) {
+                    nextTurretStepTimeNs = 0;
                 }
-                if (dpadRightPressed && !dpadRightWasPressed) {
-                    turretAdjustment -= TURRET_STEP_DEGREES;
+                long nowNs = System.nanoTime();
+                if (turretDirection != 0 && nowNs >= nextTurretStepTimeNs) {
+                    if (Math.abs(turretTargetDegrees + turretDirection * TURRET_STEP_DEGREES)
+                            <= TURRET_MAX_ANGLE_DEGREES) {
+                        moveTurretByDegrees(turretDirection * TURRET_STEP_DEGREES);
+                    }
+                    nextTurretStepTimeNs = nowNs + TURRET_REPEAT_INTERVAL_NS;
                 }
-                moveTurretByDegrees(turretAdjustment);
-                dpadLeftWasPressed = dpadLeftPressed;
-                dpadRightWasPressed = dpadRightPressed;
+                previousTurretDirection = turretDirection;
                 telemetry.addData("Turret target (deg, +left)", turretTargetDegrees);
                 telemetry.addData("Shooter / transfer", shooterRunning ? "On" : "Off");
+                telemetry.addData("Shooter target (RPM)", shooterTargetRpm);
+                telemetry.addData("G2 shooter D-pad", "up=%s down=%s",
+                        dpadUpPressed, dpadDownPressed);
+                if (shooterMotor != null) {
+                    // Sample shooter shaft RPM once per second without delaying the controls.
+                    if (nowNs - lastShooterRpmSampleNs >= SHOOTER_RPM_SAMPLE_INTERVAL_NS) {
+                        shooterActualRpm = shooterMotor.getVelocity() * 60.0
+                                / PIDConstants.TICKS_PER_REVOLUTION;
+                        lastShooterRpmSampleNs = nowNs;
+                    }
+                    telemetry.addData("Shooter actual (RPM)", "%.0f", shooterActualRpm);
+                } else {
+                    telemetry.addLine("Shooter motor not configured");
+                }
                 telemetry.update();
             } catch (Exception e) {
               handleExpection(e);

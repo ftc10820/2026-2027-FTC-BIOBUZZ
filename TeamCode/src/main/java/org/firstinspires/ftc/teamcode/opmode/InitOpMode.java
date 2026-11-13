@@ -32,12 +32,20 @@ public abstract class InitOpMode extends LinearOpMode {
 
     protected static final double STOPPER_CLOSED_POSITION = 0.0;
     protected static final double STOPPER_OPEN_POSITION = 0.2;
+    protected static final double GRABBER_INIT_POSITION = 0.1;
+    protected static final double GRABBER_CLOSED_POSITION = 0.12;
+    // Shooter shaft RPM; the 2:1 reduction means 1750 here commands 3500 motor RPM.
+    protected static final double SHOOTER_START_RPM = 1750.0;
+    protected static final double SHOOTER_RPM_STEP = 250.0;
+    protected static final double SHOOTER_MIN_RPM = 250.0;
+    protected static final long SHOOTER_RPM_SAMPLE_INTERVAL_NS = 1_000_000_000L;
 
     // Stock goBILDA 3208-0004-0001 turret: 2.75 servo turns per turret turn.
     // https://www.gobilda.com/gear-driven-turret-2-75-1-ratio-105mm-id/
-    protected static final double TURRET_STEP_DEGREES = 60.0;
-    // Three 60-degree steps from center in either direction.
-    private static final double TURRET_MAX_ANGLE_DEGREES = 180.0;
+    protected static final double TURRET_STEP_DEGREES = 10.0;
+    // Eighteen 10-degree steps from center in either direction.
+    protected static final double TURRET_MAX_ANGLE_DEGREES = 180.0;
+    protected static final long TURRET_REPEAT_INTERVAL_NS = 100_000_000L;
     private static final double TURRET_GEAR_RATIO = 2.75;
     // 2000-0025-0502 in its default positional mode: 1800 degrees at 500–2500 us.
     // https://www.gobilda.com/2000-series-5-turn-dual-mode-servo-25-2-torque/
@@ -83,7 +91,7 @@ public abstract class InitOpMode extends LinearOpMode {
         flowerRampServo.setPosition(0.5);
 
         grabberServo = hardwareMap.get(Servo.class, "grabberServo");
-        grabberServo.setPosition(0.0);
+        grabberServo.setPosition(GRABBER_INIT_POSITION);
 
         slideMotor = hardwareMap.get(DcMotor.class, "slideMotor");
         slideMotor.setPower(0.0);
@@ -96,8 +104,7 @@ public abstract class InitOpMode extends LinearOpMode {
         if (shooterMotor != null) {
             shooterMotor.setPower(0.0);
             shooterMotor.setDirection(DcMotor.Direction.REVERSE);
-            // Preserve encoder velocity control for PID Tuning OpMode.
-            // Red/Blue TeleOp switch to direct power after shared initialization.
+            // Preserve encoder velocity control for PID tuning and TeleOp speed adjustment.
             shooterMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             shooterMotor.setVelocity(0.0);
         }
@@ -143,7 +150,7 @@ public abstract class InitOpMode extends LinearOpMode {
         double nextPosition = TURRET_CENTER_POSITION
                 + nextTargetDegrees * TURRET_GEAR_RATIO / TURRET_SERVO_TRAVEL_DEGREES;
         if (nextPosition < 0.0 || nextPosition > 1.0) {
-            telemetry.log().add("Turret travel limit: cannot take another 60-degree step");
+            telemetry.log().add("Turret travel limit: cannot take another 10-degree step");
             return;
         }
         turretServo.setPosition(nextPosition);
