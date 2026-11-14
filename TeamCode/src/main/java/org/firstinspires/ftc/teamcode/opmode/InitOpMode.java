@@ -35,7 +35,7 @@ public abstract class InitOpMode extends LinearOpMode {
     protected static final double GRABBER_INIT_POSITION = 0.1;
     protected static final double GRABBER_CLOSED_POSITION = 0.12;
     // Shooter shaft RPM; the 2:1 reduction means 1750 here commands 3500 motor RPM.
-    protected static final double SHOOTER_START_RPM = 1750.0;
+    protected static final double SHOOTER_START_RPM = 2500.0;
     protected static final double SHOOTER_RPM_STEP = 250.0;
     protected static final double SHOOTER_MIN_RPM = 250.0;
     protected static final long SHOOTER_RPM_SAMPLE_INTERVAL_NS = 1_000_000_000L;
@@ -54,9 +54,9 @@ public abstract class InitOpMode extends LinearOpMode {
     protected double turretTargetDegrees = 0.0;
     private ServoImplEx turretServo;
 
-    protected DcMotor intakeMotor;
-    protected DcMotor transferMotor;
-    protected DcMotor slideMotor;
+    protected DcMotorEx intakeMotor;
+    protected DcMotorEx transferMotor;
+    protected DcMotorEx slideMotor;
     protected Servo grabberServo;
     protected Servo flowerRampServo;
     protected Servo stopperServo;
@@ -79,12 +79,12 @@ public abstract class InitOpMode extends LinearOpMode {
 
         // Match the drive motor names used by Road Runner MecanumDrive.
         drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
-        intakeMotor = hardwareMap.get(DcMotor.class, "intakeMotor");
+        intakeMotor = (DcMotorEx) hardwareMap.get(DcMotorEx.class, "intakeMotor");
 
-        transferMotor = hardwareMap.get(DcMotor.class, "transferMotor");
+        transferMotor = (DcMotorEx) hardwareMap.get(DcMotorEx.class, "transferMotor");
         transferMotor.setPower(0.0);
-        transferMotor.setDirection(DcMotor.Direction.FORWARD);
-        transferMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        transferMotor.setDirection(DcMotorEx.Direction.FORWARD);
+        transferMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
 
         // Configure Control Hub servo port 5 as "flowerRampServo".
         flowerRampServo = hardwareMap.get(Servo.class, "flowerRampServo");
@@ -93,19 +93,18 @@ public abstract class InitOpMode extends LinearOpMode {
         grabberServo = hardwareMap.get(Servo.class, "grabberServo");
         grabberServo.setPosition(GRABBER_INIT_POSITION);
 
-        slideMotor = hardwareMap.get(DcMotor.class, "slideMotor");
+        slideMotor = (DcMotorEx) hardwareMap.get(DcMotorEx.class, "slideMotor");
         slideMotor.setPower(0.0);
         // Positive power raises the slide; reverse this direction if needed for the mechanism.
-        slideMotor.setDirection(DcMotor.Direction.FORWARD);
-        slideMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        slideMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        slideMotor.setDirection(DcMotorEx.Direction.FORWARD);
+        slideMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        slideMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
 
-        shooterMotor = hardwareMap.tryGet(DcMotorEx.class, "shooterMotor");
+        shooterMotor = (DcMotorEx) hardwareMap.tryGet(DcMotorEx.class, "shooterMotor");
         if (shooterMotor != null) {
             shooterMotor.setPower(0.0);
-            shooterMotor.setDirection(DcMotor.Direction.REVERSE);
             // Preserve encoder velocity control for PID tuning and TeleOp speed adjustment.
-            shooterMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            shooterMotor.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
             shooterMotor.setVelocity(0.0);
         }
 

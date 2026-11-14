@@ -33,7 +33,6 @@ import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import org.firstinspires.ftc.teamcode.PIDConstants;
 
 // Drive loop copied from the FTC SDK sample BasicOmniOpMode_Linear.
 // Uses our shared hardware initialization and adds intake, shooter, transfer, and flower ramp controls.
@@ -46,9 +45,10 @@ public class TeleOpBlue extends InitOpMode {
             shooterMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
         initializeTurret();
+        updateShooterTelemetry(false, SHOOTER_START_RPM);
 
         boolean shooterRunning = false;
-        double shooterTargetRpm = SHOOTER_START_RPM;
+        double shooterRpm = SHOOTER_START_RPM;
         boolean dpadUpWasPressed = false;
         boolean dpadDownWasPressed = false;
         boolean stopperOpen = false;
@@ -71,9 +71,6 @@ public class TeleOpBlue extends InitOpMode {
         grabberOpen = false;
         // Require a fresh X press so a held button cannot immediately reopen it.
         grabberXWasPressed = gamepad2.x;
-
-        double shooterActualRpm = 0.0;
-        long lastShooterRpmSampleNs = System.nanoTime() - SHOOTER_RPM_SAMPLE_INTERVAL_NS;
 
         while (opModeIsActive()) {
             try {
@@ -105,23 +102,22 @@ public class TeleOpBlue extends InitOpMode {
                 }
                 rightBumperWasPressed = rightBumperPressed;
 
-                // Adjust the shooter target once per D-pad press, including while stopped.
+                // Controller 2 changes shooter RPM by 250 once per D-pad press.
                 boolean dpadUpPressed = gamepad2.dpad_up;
                 boolean dpadDownPressed = gamepad2.dpad_down;
                 if (dpadUpPressed && !dpadUpWasPressed) {
-                    shooterTargetRpm += SHOOTER_RPM_STEP;
+                    shooterRpm += SHOOTER_RPM_STEP;
                 }
                 if (dpadDownPressed && !dpadDownWasPressed) {
-                    shooterTargetRpm = Math.max(SHOOTER_MIN_RPM,
-                            shooterTargetRpm - SHOOTER_RPM_STEP);
+                    shooterRpm = Math.max(SHOOTER_MIN_RPM, shooterRpm - SHOOTER_RPM_STEP);
                 }
                 dpadUpWasPressed = dpadUpPressed;
                 dpadDownWasPressed = dpadDownPressed;
 
                 transferMotor.setPower(shooterRunning ? 1.0 : 0.0);
                 if (shooterMotor != null) {
-                    shooterMotor.setVelocity(shooterRunning
-                            ? PIDConstants.rpmToTicks(shooterTargetRpm) : 0.0);
+                    // 28 motor encoder ticks/rev * 2 motor turns per shooter turn = 56.
+                    shooterMotor.setVelocity(shooterRunning ? shooterRpm * 56.0 / 60.0 : 0.0);
                 }
 
                 // Toggle the stopper once per Y press, independently of the shooter.
@@ -168,23 +164,7 @@ public class TeleOpBlue extends InitOpMode {
                     nextTurretStepTimeNs = nowNs + TURRET_REPEAT_INTERVAL_NS;
                 }
                 previousTurretDirection = turretDirection;
-                telemetry.addData("Turret target (deg, +left)", turretTargetDegrees);
-                telemetry.addData("Shooter / transfer", shooterRunning ? "On" : "Off");
-                telemetry.addData("Shooter target (RPM)", shooterTargetRpm);
-                telemetry.addData("G2 shooter D-pad", "up=%s down=%s",
-                        dpadUpPressed, dpadDownPressed);
-                if (shooterMotor != null) {
-                    // Sample shooter shaft RPM once per second without delaying the controls.
-                    if (nowNs - lastShooterRpmSampleNs >= SHOOTER_RPM_SAMPLE_INTERVAL_NS) {
-                        shooterActualRpm = shooterMotor.getVelocity() * 60.0
-                                / PIDConstants.TICKS_PER_REVOLUTION;
-                        lastShooterRpmSampleNs = nowNs;
-                    }
-                    telemetry.addData("Shooter actual (RPM)", "%.0f", shooterActualRpm);
-                } else {
-                    telemetry.addLine("Shooter motor not configured");
-                }
-                telemetry.update();
+                updateShooterTelemetry(shooterRunning, shooterRpm);
             } catch (Exception e) {
               handleExpection(e);
             }
@@ -199,7 +179,23 @@ public class TeleOpBlue extends InitOpMode {
         stopperServo.setPosition(STOPPER_CLOSED_POSITION);
         transferMotor.setPower(0.0);
         if (shooterMotor != null) {
-            shooterMotor.setPower(0.0);
+            shooterMotor.setVelocity(0.0);
         }
+    }
+
+    private void updateShooterTelemetry(boolean shooterRunning, double shooterRpm) {
+        telemetry.clearAll();
+        telemetry.addData("Shooter / transfer", shooterRunning ? "On" : "Off");
+        telemetry.addData("Shooter selected (flywheel RPM)", "%.0f", shooterRpm);
+        telemetry.addData("Shooter commanded (flywheel RPM)", "%.0f",
+                shooterRunning ? shooterRpm : 0.0);
+        telemetry.addData("G2 shooter D-pad", "up=%s down=%s",
+                gamepad2.dpad_up, gamepad2.dpad_down);
+        if (shooterMotor != null) {
+            telemetry.addData("Shooter RPM", "%.0f", shooterMotor.getVelocity() * 60.0 / 56.0);
+        } else {
+            telemetry.addData("Shooter RPM", "Unavailable");
+        }
+        telemetry.update();
     }
 }
