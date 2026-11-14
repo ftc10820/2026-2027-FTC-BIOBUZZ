@@ -102,11 +102,13 @@ public class AutoRedLoading extends InitOpMode {
                 }
         );
         Action auto = new SequentialAction(
+                // Hold the initialized positions and keep motors stopped for ten seconds after START.
+                new SleepAction(10.0),
                 shooting, collection, new ParallelAction(finalStrafe, raiseRampAndGate)
         );
 
         telemetry.addLine("Red Loading: start at (-60, -42), facing -X (180 deg)");
-        telemetry.addLine("Gate opens and intake starts at 4s; driving starts at 6.5s");
+        telemetry.addLine("Wait 10s after START; gate/intake start at 14s; driving starts at 16.5s");
         telemetry.update();
 
         waitForStart();
