@@ -40,16 +40,16 @@ public class AutoRedLoading extends InitOpMode {
         ));
         // Facing -X (away from the hive), backward is +X. Hold this heading.
         Action path = drive.actionBuilder(initialPose)
-                .strafeToConstantHeading(new Vector2d(-42, -10), moveSpeed, MOVE_ACCEL)
+                .strafeToConstantHeading(new Vector2d(-59, -10), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
                 .build();
 
         Action shooting = new SequentialAction(
                 packet -> {
                     // These commands return immediately, so all three mechanisms move together.
-                    // TeleOp's conversion includes the 2:1 reduction: 2250 shooter RPM = 4500 motor RPM.
+                    // TeleOp's conversion includes the 2:1 reduction: 2400 shooter RPM = 4800 motor RPM.
                     if (shooterMotor != null) {
-                        shooterMotor.setVelocity(2250.0 * 56.0 / 60.0);
+                        shooterMotor.setVelocity(2400.0 * 56.0 / 60.0);
                     }
                     transferMotor.setPower(1.0);
                     // TeleOp's helper applies the turret gearing; negative is clockwise from above.
@@ -81,7 +81,7 @@ public class AutoRedLoading extends InitOpMode {
         Action auto = new ParallelAction(shooting, path);
 
         telemetry.addLine("Red Loading: start at (-60, -10), facing -X (180 deg)");
-        telemetry.addLine("Back up to (-42, -10); gate opens at 3s; intake runs from 4 to 6s");
+        telemetry.addLine("Back up 1 inch to (-59, -10); gate opens at 3s; intake runs from 4 to 6s");
         telemetry.update();
 
         waitForStart();
