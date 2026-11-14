@@ -19,4 +19,13 @@ public class PIDConstants {
     public static double rpsToTicks(double rps) {
         return rps * PIDConstants.TICKS_PER_REVOLUTION;
     }
+
+    // Incoming conversion helpers retained but disabled to preserve the working code.
+    // public static double ticksToRpm(double ticks) {
+    //     return ticks / PIDConstants.TICKS_PER_REVOLUTION;
+    // }
+
+    // public static double ticksToRps(double ticks) {
+    //     return ticks * 60 / PIDConstants.TICKS_PER_REVOLUTION;
+    // }
 }
