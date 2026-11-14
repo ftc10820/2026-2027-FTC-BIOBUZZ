@@ -96,14 +96,24 @@ public class AutoRedLoading extends InitOpMode {
                     return false;
                 })
                 // Half the normal speed cap for this collection leg only.
-                .strafeToConstantHeading(new Vector2d(-55, -24), slowSpeed, MOVE_ACCEL)
+                .strafeToConstantHeading(new Vector2d(-53, -24), slowSpeed, MOVE_ACCEL)
                 .endTrajectory()
-                .waitSeconds(3.0)
+                .waitSeconds(4.5)
                 .strafeToConstantHeading(new Vector2d(-45, -24), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
+                .build();
+        Action finalStrafe = drive.actionBuilder(new Pose2d(-45, -24, Math.toRadians(180)))
                 .strafeToConstantHeading(new Vector2d(-45, -57), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
                 .build();
+        // This delay starts alongside the final strafe, not at the start of auto.
+        Action raiseRamp = new SequentialAction(
+                new SleepAction(1.5),
+                packet -> {
+                    flowerRampServo.setPosition(0.5);
+                    return false;
+                }
+        );
         // Lower the ramp at eight seconds without delaying the collection route.
         Action lowerRamp = packet -> {
             if (autoTimer.seconds() < 8.0) {
@@ -112,7 +122,10 @@ public class AutoRedLoading extends InitOpMode {
             flowerRampServo.setPosition(0.0);
             return false;
         };
-        Action auto = new ParallelAction(new SequentialAction(opening, collection), lowerRamp);
+        Action auto = new ParallelAction(
+                new SequentialAction(opening, collection, new ParallelAction(finalStrafe, raiseRamp)),
+                lowerRamp
+        );
 
         telemetry.addLine("Red Loading: start at (-60, -10), facing -X (180 deg)");
         telemetry.addLine("Gate opens at 3s; intake runs from 4 to 7s; collection route starts at 7s");
