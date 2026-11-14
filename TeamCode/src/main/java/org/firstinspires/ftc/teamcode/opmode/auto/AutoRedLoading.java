@@ -45,7 +45,7 @@ public class AutoRedLoading extends InitOpMode {
         Action approach = drive.actionBuilder(initialPose)
                 .stopAndAdd(packet -> {
                     // Nonblocking commands: spin up and turn the turret as the first drive leg starts.
-                    // 28 motor ticks/rev * 2:1 reduction: 2350 flywheel RPM = 4700 motor RPM.
+                    // 28 motor ticks/rev * 2:1 reduction: 2300 flywheel RPM = 4700 motor RPM.
                     if (shooterMotor != null) {
                         shooterMotor.setVelocity(2350.0 * 56.0 / 60.0);
                     }
@@ -66,7 +66,7 @@ public class AutoRedLoading extends InitOpMode {
                     intakeMotor.setPower(1.0);
                     return false;
                 })
-                .waitSeconds(3.0)
+                .waitSeconds(3.5)
                 .stopAndAdd(packet -> {
                     intakeMotor.setPower(0.0);
                     return false;
@@ -152,7 +152,7 @@ public class AutoRedLoading extends InitOpMode {
         Action auto = new SequentialAction(approach, oscillate, departure);
 
         telemetry.addLine("Red Loading: start at (-58, -38), facing -X (180 deg)");
-        telemetry.addLine("Shoot at (-50, -25) for 3s; oscillate between X=-55 and -54 at Y=-25 for 4.5s; finish at (-40, -65)");
+        telemetry.addLine("Shoot at (-50, -25) for 3.5s; oscillate between X=-55 and -54 at Y=-25 for 4.5s; finish at (-40, -65)");
         telemetry.update();
 
         waitForStart();
