@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.opmode.auto;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.AccelConstraint;
 import com.acmerobotics.roadrunner.MinVelConstraint;
-import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.ProfileAccelConstraint;
@@ -22,7 +21,6 @@ import java.util.Arrays;
 
 @Autonomous(name = "Auto Red Garden", group = "Auto")
 public class AutoRedGarden extends InitOpMode {
-    // Inches and seconds. Each leg ends at rest, so the profile brakes before its target.
     private static final double MAX_SPEED = 30.0;
     private static final AccelConstraint MOVE_ACCEL = new ProfileAccelConstraint(-25.0, 30.0);
 
@@ -33,53 +31,29 @@ public class AutoRedGarden extends InitOpMode {
         intakeMotor.setPower(0.0);
         initializeTurret();
 
-        // Field coordinates are (x, y), matching PinpointLocalizer.getPosX/getPosY.
-        // Encoder direction reversal does not swap field axes. At -90 degrees,
-        // forward is -Y and right is -X; after the clockwise turn, forward is -X.
+        // Stay still during shooting, then drive from the original field starting pose.
+        drive.setDrivePowers(new PoseVelocity2d(new Vector2d(0, 0), 0));
         Pose2d initialPose = new Pose2d(61, -33, Math.toRadians(-90));
         VelConstraint moveSpeed = new MinVelConstraint(Arrays.asList(
                 drive.defaultVelConstraint,
                 new TranslationalVelConstraint(MAX_SPEED)
         ));
-
-        // Every destination includes the 5-inch -Y correction. The fixed starting
-        // pose makes the first forward leg 5 inches longer.
+        // Hold -90 degrees: forward is -Y and right is -X. Stop at each corner.
         Action path = drive.actionBuilder(initialPose)
-                .waitSeconds(6.0)
-                // Forward, then back, then right. Hold the starting heading.
-                .strafeToConstantHeading(new Vector2d(61, -65), moveSpeed, MOVE_ACCEL)
+                .strafeToConstantHeading(new Vector2d(61, -42), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
-                // Move 8 inches farther back, toward the blue hive.
-                .strafeToConstantHeading(new Vector2d(61, -12), moveSpeed, MOVE_ACCEL)
+                .strafeToConstantHeading(new Vector2d(-24, -42), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
-                .strafeToConstantHeading(new Vector2d(55, -13), moveSpeed, MOVE_ACCEL)
-                .endTrajectory()
-                .turn(Math.toRadians(-90))
-                // Now facing -X. Keep this heading through the loading/park zone.
-                // Stop 2 inches earlier at the second shooting position.
-                .strafeToConstantHeading(new Vector2d(-48, -13), moveSpeed, MOVE_ACCEL)
-                .endTrajectory()
-                .waitSeconds(3.0)
-                // Strafe left, then move forward.
-                .strafeToConstantHeading(new Vector2d(-48, -26), moveSpeed, MOVE_ACCEL)
-                .endTrajectory()
-                .strafeToConstantHeading(new Vector2d(-55, -26), moveSpeed, MOVE_ACCEL)
-                .endTrajectory()
-                .waitSeconds(3.0)
-                // Back, then left into the requested loading/park position.
-                .strafeToConstantHeading(new Vector2d(-45, -26), moveSpeed, MOVE_ACCEL)
-                .endTrajectory()
-                // Finish the left strafe at the existing loading/park endpoint.
-                .strafeToConstantHeading(new Vector2d(-45, -60), moveSpeed, MOVE_ACCEL)
+                .strafeToConstantHeading(new Vector2d(-24, -60), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
                 .build();
 
         Action shooting = new SequentialAction(
                 packet -> {
                     // These commands return immediately, so all three mechanisms move together.
-                    // TeleOp's conversion includes the 2:1 reduction: 1800 shooter RPM = 3600 motor RPM.
+                    // TeleOp's conversion includes the 2:1 reduction: 2400 shooter RPM = 4800 motor RPM.
                     if (shooterMotor != null) {
-                        shooterMotor.setVelocity(PIDConstants.rpmToTicks(1800));
+                        shooterMotor.setVelocity(PIDConstants.rpmToTicks(2100));
                     }
                     transferMotor.setPower(1.0);
                     // TeleOp's helper applies the turret gearing; negative is clockwise from above.
@@ -89,19 +63,29 @@ public class AutoRedGarden extends InitOpMode {
                 new SleepAction(3.0),
                 packet -> {
                     stopperServo.setPosition(STOPPER_OPEN_POSITION);
+                    return false;
+                },
+                // Start intake at 4 seconds; the stopper still opens at 3 seconds.
+                new SleepAction(1.0),
+                packet -> {
                     intakeMotor.setPower(1.0);
                     return false;
                 },
-                new SleepAction(5.0),
+                // Intake runs from 4 to 6.5 seconds; driving starts immediately afterward.
+                new SleepAction(2.5),
                 packet -> {
                     intakeMotor.setPower(0.0);
+                    transferMotor.setPower(0.0);
+                    if (shooterMotor != null) {
+                        shooterMotor.setVelocity(0.0);
+                    }
                     return false;
                 }
         );
-        Action auto = new ParallelAction(shooting, path);
+        Action auto = new SequentialAction(shooting, path);
 
-        telemetry.addLine("Red Garden: place at (61, -33), facing -Y (-90 deg)");
-        telemetry.addLine("Park target: (-45, -60), facing -X (180 deg)");
+        telemetry.addLine("Red Garden: start at (61, -33), facing -Y (-90 deg)");
+        telemetry.addLine("Drive at 6.5s: (61, -42) -> (-24, -42) -> (-24, -55)");
         telemetry.update();
 
         waitForStart();
@@ -109,13 +93,27 @@ public class AutoRedGarden extends InitOpMode {
             return;
         }
 
-        // initialize() creates the localizer at (0, 0, 0). Re-anchor its latest
-        // reading here so moving the robot during INIT does not offset the route.
+        // Anchor the localizer at START so movement during INIT does not offset the path.
         drive.updatePoseEstimate();
         drive.localizer.setPose(initialPose);
 
         try {
-            Actions.runBlocking(packet -> opModeIsActive() && auto.run(packet));
+            Actions.runBlocking(packet -> {
+                if (!opModeIsActive()) {
+                    return false;
+                }
+                boolean running = auto.run(packet);
+                if (shooterMotor != null) {
+                    // 28 encoder ticks per motor turn * 2 motor turns per flywheel turn.
+                    double shooterRpm = shooterMotor.getVelocity() * 60.0 / 56.0;
+                    telemetry.addData("Shooter RPM", "%.0f", shooterRpm);
+                    packet.put("Shooter RPM", shooterRpm);
+                } else {
+                    telemetry.addData("Shooter RPM", "Unavailable");
+                }
+                telemetry.update();
+                return running;
+            });
         } finally {
             drive.setDrivePowers(new PoseVelocity2d(new Vector2d(0, 0), 0));
             intakeMotor.setPower(0.0);

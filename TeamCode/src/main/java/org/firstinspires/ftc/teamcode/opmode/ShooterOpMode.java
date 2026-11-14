@@ -3,8 +3,8 @@ package org.firstinspires.ftc.teamcode.opmode;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.PIDFCoefficients;
+// import com.qualcomm.robotcore.hardware.DcMotor;
+// import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.PIDConstants;
@@ -23,7 +23,9 @@ public class ShooterOpMode extends InitOpMode {
 
         waitForStart();
 
-        shooterMotor.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER,new PIDFCoefficients(PIDConstants.KP,PIDConstants.KI,PIDConstants.KD,PIDConstants.KF));
+        // Custom PIDF tuning disabled. initialize() selects RUN_USING_ENCODER;
+        // setVelocity() continues to use the Hub's built-in velocity controller.
+        // shooterMotor.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER,new PIDFCoefficients(PIDConstants.KP,PIDConstants.KI,PIDConstants.KD,PIDConstants.KF));
 
         while (opModeIsActive()) {
             double currentVelocity = shooterMotor.getVelocity();
@@ -31,7 +33,7 @@ public class ShooterOpMode extends InitOpMode {
 
             // Use the built-in motor PIDF controller to set the velocity
             shooterMotor.setVelocity(PIDConstants.TARGET_VELOCITY); // ticks per second
-            shooterMotor.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER,new PIDFCoefficients(PIDConstants.KP,PIDConstants.KI,PIDConstants.KD,PIDConstants.KF));
+            // shooterMotor.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER,new PIDFCoefficients(PIDConstants.KP,PIDConstants.KI,PIDConstants.KD,PIDConstants.KF));
 
             telemetry.addData("Target Velocity", PIDConstants.TARGET_VELOCITY);
             telemetry.addData("Current Velocity", currentVelocity);

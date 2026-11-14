@@ -8,6 +8,7 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+// import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.qualcomm.robotcore.hardware.PwmControl;
@@ -17,11 +18,16 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
+// import org.firstinspires.ftc.teamcode.PIDConstants;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Collections;
 import java.util.List;
+
+import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 
 /**
  * Shared hardware initialization and Limelight vision helpers.
@@ -34,9 +40,9 @@ public abstract class InitOpMode extends LinearOpMode {
     protected static final double STOPPER_OPEN_POSITION = 0.2;
     protected static final double GRABBER_INIT_POSITION = 0.1;
     protected static final double GRABBER_CLOSED_POSITION = 0.12;
-    // Shooter shaft RPM; the 2:1 reduction means 1750 here commands 3500 motor RPM.
-    protected static final double SHOOTER_START_RPM = 1750.0;
-    protected static final double SHOOTER_RPM_STEP = 250.0;
+    // Shooter shaft RPM; the 2:1 reduction means 2400 here commands 4800 motor RPM.
+    protected static final double SHOOTER_START_RPM = 2400.0;
+    protected static final double SHOOTER_RPM_STEP = 100.0;
     protected static final double SHOOTER_MIN_RPM = 250.0;
     protected static final long SHOOTER_RPM_SAMPLE_INTERVAL_NS = 1_000_000_000L;
 
@@ -54,9 +60,9 @@ public abstract class InitOpMode extends LinearOpMode {
     protected double turretTargetDegrees = 0.0;
     private ServoImplEx turretServo;
 
-    protected DcMotor intakeMotor;
-    protected DcMotor transferMotor;
-    protected DcMotor slideMotor;
+    protected DcMotorEx intakeMotor;
+    protected DcMotorEx transferMotor;
+    protected DcMotorEx slideMotor;
     protected Servo grabberServo;
     protected Servo flowerRampServo;
     protected Servo stopperServo;
@@ -64,6 +70,9 @@ public abstract class InitOpMode extends LinearOpMode {
 
     // Optional until installed and configured. Check for null before using it.
     protected DcMotorEx shooterMotor;
+
+    protected DistanceSensor hiveDistanceSensor;
+
     public void handleExpection(Exception e){
         StringWriter SW = new StringWriter();
         PrintWriter PW = new PrintWriter(SW);
@@ -79,12 +88,12 @@ public abstract class InitOpMode extends LinearOpMode {
 
         // Match the drive motor names used by Road Runner MecanumDrive.
         drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
-        intakeMotor = hardwareMap.get(DcMotor.class, "intakeMotor");
+        intakeMotor = (DcMotorEx) hardwareMap.get(DcMotorEx.class, "intakeMotor");
 
-        transferMotor = hardwareMap.get(DcMotor.class, "transferMotor");
+        transferMotor = (DcMotorEx) hardwareMap.get(DcMotorEx.class, "transferMotor");
         transferMotor.setPower(0.0);
-        transferMotor.setDirection(DcMotor.Direction.FORWARD);
-        transferMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        transferMotor.setDirection(DcMotorEx.Direction.FORWARD);
+        transferMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
 
         // Configure Control Hub servo port 5 as "flowerRampServo".
         flowerRampServo = hardwareMap.get(Servo.class, "flowerRampServo");
@@ -93,22 +102,24 @@ public abstract class InitOpMode extends LinearOpMode {
         grabberServo = hardwareMap.get(Servo.class, "grabberServo");
         grabberServo.setPosition(GRABBER_INIT_POSITION);
 
-        slideMotor = hardwareMap.get(DcMotor.class, "slideMotor");
+        slideMotor = (DcMotorEx) hardwareMap.get(DcMotorEx.class, "slideMotor");
         slideMotor.setPower(0.0);
         // Positive power raises the slide; reverse this direction if needed for the mechanism.
-        slideMotor.setDirection(DcMotor.Direction.FORWARD);
-        slideMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        slideMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        slideMotor.setDirection(DcMotorEx.Direction.FORWARD);
+        slideMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        slideMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
 
-        shooterMotor = hardwareMap.tryGet(DcMotorEx.class, "shooterMotor");
+        shooterMotor = (DcMotorEx) hardwareMap.tryGet(DcMotorEx.class, "shooterMotor");
         if (shooterMotor != null) {
             shooterMotor.setPower(0.0);
-            shooterMotor.setDirection(DcMotor.Direction.REVERSE);
             // Preserve encoder velocity control for PID tuning and TeleOp speed adjustment.
-            shooterMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            shooterMotor.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+            // Incoming PIDF override disabled to preserve the working shooter settings.
+            // shooterMotor.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER,new PIDFCoefficients(PIDConstants.KP,PIDConstants.KI,PIDConstants.KD,PIDConstants.KF));
             shooterMotor.setVelocity(0.0);
         }
 
+        hiveDistanceSensor = hardwareMap.get(DistanceSensor.class, "hiveDistanceSensor") ;
         // Based on the forward test; verify each name maps to the correct physical wheel.
 
         System.out.println("Drive motors initialized");
@@ -157,6 +168,11 @@ public abstract class InitOpMode extends LinearOpMode {
         turretTargetDegrees = nextTargetDegrees;
     }
 
+    // Incoming turret helper retained but disabled to preserve the working code.
+    // protected double getCurrentTurretPositionInDegrees() {
+    //     double pos = turretServo.getPosition();
+    //     return (pos - TURRET_CENTER_POSITION) * TURRET_SERVO_TRAVEL_DEGREES / TURRET_GEAR_RATIO;
+    // }
     //region Limelight 3A
 
     /*
