@@ -14,6 +14,7 @@ import com.acmerobotics.roadrunner.VelConstraint;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.opmode.InitOpMode;
 
@@ -38,6 +39,11 @@ public class AutoRedLoading extends InitOpMode {
                 drive.defaultVelConstraint,
                 new TranslationalVelConstraint(MAX_SPEED)
         ));
+        VelConstraint slowSpeed = new MinVelConstraint(Arrays.asList(
+                drive.defaultVelConstraint,
+                new TranslationalVelConstraint(MAX_SPEED / 2.0)
+        ));
+        ElapsedTime autoTimer = new ElapsedTime();
         // Facing -X (away from the hive), backward is +X. Hold this heading.
         Action path = drive.actionBuilder(initialPose)
                 .strafeToConstantHeading(new Vector2d(-59, -10), moveSpeed, MOVE_ACCEL)
@@ -66,29 +72,50 @@ public class AutoRedLoading extends InitOpMode {
                 packet -> {
                     intakeMotor.setPower(1.0);
                     return false;
-                },
-                // Intake runs from 4 to 6 seconds, independently of the drive action.
-                new SleepAction(2.0),
-                packet -> {
-                    intakeMotor.setPower(0.0);
-                    transferMotor.setPower(0.0);
-                    if (shooterMotor != null) {
-                        shooterMotor.setVelocity(0.0);
-                    }
-                    return false;
                 }
         );
-        Action auto = new ParallelAction(shooting, path);
+        Action openingActions = new ParallelAction(shooting, path);
+        // Switch at seven seconds even if the initial one-inch move is not finished.
+        Action opening = packet -> {
+            if (autoTimer.seconds() >= 7.0) {
+                intakeMotor.setPower(0.0);
+                drive.setDrivePowers(new PoseVelocity2d(new Vector2d(0, 0), 0));
+                flowerRampServo.setPosition(0.0);
+                return false;
+            }
+            openingActions.run(packet);
+            return true;
+        };
+        Action collection = drive.actionBuilder(new Pose2d(-59, -10, Math.toRadians(180)))
+                .strafeToConstantHeading(new Vector2d(-43, -10), moveSpeed, MOVE_ACCEL)
+                .endTrajectory()
+                .strafeToConstantHeading(new Vector2d(-43, -26), moveSpeed, MOVE_ACCEL)
+                .endTrajectory()
+                .stopAndAdd(packet -> {
+                    stopperServo.setPosition(STOPPER_OPEN_POSITION);
+                    intakeMotor.setPower(1.0);
+                    return false;
+                })
+                // Half the normal speed cap for this collection leg only.
+                .strafeToConstantHeading(new Vector2d(-53, -24), slowSpeed, MOVE_ACCEL)
+                .endTrajectory()
+                .waitSeconds(3.0)
+                .strafeToConstantHeading(new Vector2d(-45, -24), moveSpeed, MOVE_ACCEL)
+                .endTrajectory()
+                .strafeToConstantHeading(new Vector2d(-45, -57), moveSpeed, MOVE_ACCEL)
+                .endTrajectory()
+                .build();
+        Action auto = new SequentialAction(opening, collection);
 
         telemetry.addLine("Red Loading: start at (-60, -10), facing -X (180 deg)");
-        telemetry.addLine("Back up 1 inch to (-59, -10); gate opens at 3s; intake runs from 4 to 6s");
+        telemetry.addLine("Gate opens at 3s; intake runs from 4 to 7s; collection route starts at 7s");
         telemetry.update();
 
         waitForStart();
         if (isStopRequested()) {
             return;
         }
-        final long autoStartNs = System.nanoTime();
+        autoTimer.reset();
 
         // Anchor the localizer at START so movement during INIT does not offset the path.
         drive.updatePoseEstimate();
@@ -96,9 +123,7 @@ public class AutoRedLoading extends InitOpMode {
 
         try {
             Actions.runBlocking(packet -> {
-                // End all actions at six seconds, even if the chassis has not reached its target.
-                // The finally block stops the drive, intake, transfer, and shooter together.
-                if (!opModeIsActive() || System.nanoTime() - autoStartNs >= 6_000_000_000L) {
+                if (!opModeIsActive()) {
                     return false;
                 }
                 boolean running = auto.run(packet);
