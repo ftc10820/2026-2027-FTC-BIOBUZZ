@@ -25,6 +25,10 @@ import java.io.StringWriter;
 import java.util.Collections;
 import java.util.List;
 
+import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
+
 /**
  * Shared hardware initialization and Limelight vision helpers.
  * Call initialize() before using the helpers, then poll the desired helper in the OpMode loop.
@@ -66,6 +70,9 @@ public abstract class InitOpMode extends LinearOpMode {
 
     // Optional until installed and configured. Check for null before using it.
     protected DcMotorEx shooterMotor;
+
+    protected DistanceSensor hiveDistanceSensor;
+
     public void handleExpection(Exception e){
         StringWriter SW = new StringWriter();
         PrintWriter PW = new PrintWriter(SW);
@@ -112,6 +119,7 @@ public abstract class InitOpMode extends LinearOpMode {
             shooterMotor.setVelocity(0.0);
         }
 
+        hiveDistanceSensor = hardwareMap.get(DistanceSensor.class, "hiveDistanceSensor") ;
         // Based on the forward test; verify each name maps to the correct physical wheel.
 
         System.out.println("Drive motors initialized");
