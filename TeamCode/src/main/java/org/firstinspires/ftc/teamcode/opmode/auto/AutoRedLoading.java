@@ -51,7 +51,7 @@ public class AutoRedLoading extends InitOpMode {
                     }
                     transferMotor.setPower(1.0);
                     // TeleOp's helper applies the turret gearing; negative is clockwise from above.
-                    moveTurretByDegrees(-165.0);
+                    moveTurretByDegrees(-155.0);
                     return false;
                 },
                 new SleepAction(4.0),
@@ -77,7 +77,7 @@ public class AutoRedLoading extends InitOpMode {
                     return false;
                 })
                 // The requested rightward leg also includes a five-inch +X offset.
-                .strafeToConstantHeading(new Vector2d(-45, -28), moveSpeed, MOVE_ACCEL)
+                .strafeToConstantHeading(new Vector2d(-45, -32), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
                 // Half the normal speed cap for this collection leg only.
                 .strafeToConstantHeading(new Vector2d(-55, -24), slowSpeed, MOVE_ACCEL)
