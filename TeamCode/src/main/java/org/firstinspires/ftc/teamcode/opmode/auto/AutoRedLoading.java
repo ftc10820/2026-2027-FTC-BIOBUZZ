@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.opmode.auto;
 
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.AccelConstraint;
 import com.acmerobotics.roadrunner.MinVelConstraint;
 import com.acmerobotics.roadrunner.Pose2d;
@@ -40,7 +42,7 @@ public class AutoRedLoading extends InitOpMode {
                 new TranslationalVelConstraint(MAX_SPEED / 2.0)
         ));
         // Hold 180 degrees: backward is +X, right is +Y, and left is -Y.
-        Action auto = drive.actionBuilder(initialPose)
+        Action approach = drive.actionBuilder(initialPose)
                 .stopAndAdd(packet -> {
                     // Nonblocking commands: spin up and turn the turret as the first drive leg starts.
                     // 28 motor ticks/rev * 2:1 reduction: 2350 flywheel RPM = 4700 motor RPM.
@@ -79,29 +81,78 @@ public class AutoRedLoading extends InitOpMode {
                 // Only this forward collection leg uses half the normal speed cap (15 in/s).
                 .strafeToConstantHeading(new Vector2d(-55, -25), slowSpeed, MOVE_ACCEL)
                 .endTrajectory()
-                .waitSeconds(3.5)
-                .stopAndAdd(packet -> {
-                    intakeMotor.setPower(0.0);
-                    transferMotor.setPower(0.0);
-                    if (shooterMotor != null) {
-                        shooterMotor.setVelocity(0.0);
-                    }
-                    return false;
-                })
-                .strafeToConstantHeading(new Vector2d(-40, -25), moveSpeed, MOVE_ACCEL)
-                .endTrajectory()
-                .stopAndAdd(packet -> {
-                    // Raise the ramp and close the gate as the final left strafe starts.
-                    flowerRampServo.setPosition(0.5);
-                    stopperServo.setPosition(STOPPER_CLOSED_POSITION);
-                    return false;
-                })
-                .strafeToConstantHeading(new Vector2d(-40, -65), moveSpeed, MOVE_ACCEL)
-                .endTrajectory()
                 .build();
 
+        // Start the clock only after the first arrival at (-55, -25).
+        Action oscillate = new Action() {
+            private long startedNs;
+            private boolean started;
+            private boolean towardMinus54 = true;
+            private Action leg;
+            private Pose2d legStart = new Pose2d(-55, -25, Math.toRadians(180));
+
+            @Override
+            public boolean run(TelemetryPacket packet) {
+                if (!started) {
+                    startedNs = System.nanoTime();
+                    started = true;
+                }
+                if (System.nanoTime() - startedNs >= 4_500_000_000L) {
+                    drive.setDrivePowers(new PoseVelocity2d(new Vector2d(0, 0), 0));
+                    return false;
+                }
+                double targetX = towardMinus54 ? -54 : -55;
+                if (leg == null) {
+                    // Build a fresh action for each pass; completed actions cannot be reused.
+                    leg = drive.actionBuilder(legStart)
+                            .strafeToConstantHeading(new Vector2d(targetX, -25), slowSpeed, MOVE_ACCEL)
+                            .endTrajectory()
+                            .build();
+                }
+                if (!leg.run(packet)) {
+                    legStart = new Pose2d(targetX, -25, Math.toRadians(180));
+                    towardMinus54 = !towardMinus54;
+                    leg = null;
+                }
+                return true;
+            }
+        };
+        Action departure = new Action() {
+            private Action route;
+
+            @Override
+            public boolean run(TelemetryPacket packet) {
+                if (route == null) {
+                    // The timed oscillation can finish between endpoints. Continue from the measured pose.
+                    drive.updatePoseEstimate();
+                    route = drive.actionBuilder(drive.localizer.getPose())
+                            .stopAndAdd(actionPacket -> {
+                                intakeMotor.setPower(0.0);
+                                transferMotor.setPower(0.0);
+                                if (shooterMotor != null) {
+                                    shooterMotor.setVelocity(0.0);
+                                }
+                                return false;
+                            })
+                            .strafeToConstantHeading(new Vector2d(-40, -25), moveSpeed, MOVE_ACCEL)
+                            .endTrajectory()
+                            .stopAndAdd(actionPacket -> {
+                                // Raise the ramp and close the gate as the final left strafe starts.
+                                flowerRampServo.setPosition(0.5);
+                                stopperServo.setPosition(STOPPER_CLOSED_POSITION);
+                                return false;
+                            })
+                            .strafeToConstantHeading(new Vector2d(-40, -65), moveSpeed, MOVE_ACCEL)
+                            .endTrajectory()
+                            .build();
+                }
+                return route.run(packet);
+            }
+        };
+        Action auto = new SequentialAction(approach, oscillate, departure);
+
         telemetry.addLine("Red Loading: start at (-58, -38), facing -X (180 deg)");
-        telemetry.addLine("Shoot at (-50, -25) for 3s; collect at (-55, -25) for 3.5s; finish at (-40, -65)");
+        telemetry.addLine("Shoot at (-50, -25) for 3s; oscillate between X=-55 and -54 at Y=-25 for 4.5s; finish at (-40, -65)");
         telemetry.update();
 
         waitForStart();
