@@ -72,6 +72,8 @@ public class AutoRedLoading extends InitOpMode {
                 .strafeToConstantHeading(new Vector2d(-50, -42), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
                 .stopAndAdd(packet -> {
+                    // Aim 165 degrees clockwise from center as the right strafe starts.
+                    moveTurretByDegrees(-165.0 - turretTargetDegrees);
                     flowerRampServo.setPosition(0.0);
                     intakeMotor.setPower(1.0);
                     return false;
