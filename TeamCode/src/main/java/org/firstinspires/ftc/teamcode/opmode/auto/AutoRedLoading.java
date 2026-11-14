@@ -69,7 +69,7 @@ public class AutoRedLoading extends InitOpMode {
                     intakeMotor.setPower(0.0);
                     return false;
                 })
-                .strafeToConstantHeading(new Vector2d(-45, -25), moveSpeed, MOVE_ACCEL)
+                .strafeToConstantHeading(new Vector2d(-40, -25), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
                 .stopAndAdd(packet -> {
                     flowerRampServo.setPosition(0.0);
@@ -88,7 +88,7 @@ public class AutoRedLoading extends InitOpMode {
                     }
                     return false;
                 })
-                .strafeToConstantHeading(new Vector2d(-45, -25), moveSpeed, MOVE_ACCEL)
+                .strafeToConstantHeading(new Vector2d(-40, -25), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
                 .stopAndAdd(packet -> {
                     // Raise the ramp and close the gate as the final left strafe starts.
@@ -96,12 +96,12 @@ public class AutoRedLoading extends InitOpMode {
                     stopperServo.setPosition(STOPPER_CLOSED_POSITION);
                     return false;
                 })
-                .strafeToConstantHeading(new Vector2d(-45, -65), moveSpeed, MOVE_ACCEL)
+                .strafeToConstantHeading(new Vector2d(-40, -65), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
                 .build();
 
         telemetry.addLine("Red Loading: start at (-58, -38), facing -X (180 deg)");
-        telemetry.addLine("Shoot at (-50, -25) for 3s; collect at (-55, -25) for 3.5s; finish at (-45, -65)");
+        telemetry.addLine("Shoot at (-50, -25) for 3s; collect at (-55, -25) for 3.5s; finish at (-40, -65)");
         telemetry.update();
 
         waitForStart();
