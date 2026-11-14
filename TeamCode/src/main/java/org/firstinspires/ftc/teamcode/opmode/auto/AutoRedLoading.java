@@ -51,7 +51,7 @@ public class AutoRedLoading extends InitOpMode {
                     }
                     transferMotor.setPower(1.0);
                     // TeleOp's helper applies the turret gearing; negative is clockwise from above.
-                    moveTurretByDegrees(-155.0);
+                    moveTurretByDegrees(-150.0);
                     return false;
                 },
                 new SleepAction(3.5),
@@ -76,8 +76,8 @@ public class AutoRedLoading extends InitOpMode {
                 .strafeToConstantHeading(new Vector2d(-50, -42), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
                 .stopAndAdd(packet -> {
-                    // Aim 165 degrees clockwise from center as the right strafe starts.
-                    moveTurretByDegrees(-165.0 - turretTargetDegrees);
+                    // Aim 160 degrees clockwise from center as the right strafe starts.
+                    moveTurretByDegrees(-160.0 - turretTargetDegrees);
                     flowerRampServo.setPosition(0.0);
                     intakeMotor.setPower(1.0);
                     return false;
