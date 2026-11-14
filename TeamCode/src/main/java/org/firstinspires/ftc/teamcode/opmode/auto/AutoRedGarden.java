@@ -53,7 +53,7 @@ public class AutoRedGarden extends InitOpMode {
                     // These commands return immediately, so all three mechanisms move together.
                     // TeleOp's conversion includes the 2:1 reduction: 2400 shooter RPM = 4800 motor RPM.
                     if (shooterMotor != null) {
-                        shooterMotor.setVelocity(PIDConstants.rpmToTicks(2100));
+                        shooterMotor.setVelocity(PIDConstants.rpmToTicks(2400));
                     }
                     transferMotor.setPower(1.0);
                     // TeleOp's helper applies the turret gearing; negative is clockwise from above.
