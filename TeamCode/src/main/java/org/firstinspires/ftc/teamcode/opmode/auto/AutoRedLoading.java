@@ -54,9 +54,13 @@ public class AutoRedLoading extends InitOpMode {
                     moveTurretByDegrees(-155.0);
                     return false;
                 },
-                new SleepAction(4.0),
+                new SleepAction(3.5),
                 packet -> {
                     stopperServo.setPosition(STOPPER_OPEN_POSITION);
+                    return false;
+                },
+                new SleepAction(0.5),
+                packet -> {
                     intakeMotor.setPower(1.0);
                     return false;
                 },
@@ -108,7 +112,7 @@ public class AutoRedLoading extends InitOpMode {
         );
 
         telemetry.addLine("Red Loading: start at (-60, -42), facing -X (180 deg)");
-        telemetry.addLine("Wait 10s after START; gate/intake start at 14s; driving starts at 16.5s");
+        telemetry.addLine("Wait 10s after START; gate opens at 13.5s; intake starts at 14s; driving starts at 16.5s");
         telemetry.update();
 
         waitForStart();
