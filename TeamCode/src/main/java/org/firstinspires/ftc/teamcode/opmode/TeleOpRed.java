@@ -130,8 +130,8 @@ public class TeleOpRed extends InitOpMode {
                     setVelocityTrigger = false ;
                 }
 
-                // Toggle the stopper once per Y press, independently of the shooter.
-                boolean yPressed = gamepad1.y;
+                // Toggle the stopper once per gamepad 2 Y press, independently of the shooter.
+                boolean yPressed = gamepad2.y;
                 if (yPressed && !yWasPressed) {
                     stopperOpen = !stopperOpen;
                     stopperServo.setPosition(stopperOpen
