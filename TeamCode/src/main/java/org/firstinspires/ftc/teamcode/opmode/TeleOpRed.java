@@ -108,7 +108,7 @@ public class TeleOpRed extends InitOpMode {
 
                 rightBumperWasPressed = rightBumperPressed;
 
-                // Controller 2 changes shooter RPM by 100 once per D-pad press.
+                // Controller 2 changes shooter RPM by 50 once per D-pad press.
                 boolean dpadUpPressed = gamepad2.dpad_up;
                 boolean dpadDownPressed = gamepad2.dpad_down;
                 if (dpadUpPressed && !dpadUpWasPressed) {
@@ -195,6 +195,7 @@ public class TeleOpRed extends InitOpMode {
 
     private void updateShooterTelemetry(boolean shooterRunning, double shooterRpm) {
         telemetry.clearAll();
+        telemetry.addData("Turret target (deg, +left / -right)", "%.0f", turretTargetDegrees);
         telemetry.addData("Shooter / transfer", shooterRunning ? "On" : "Off");
         telemetry.addData("Shooter selected (flywheel RPM)", "%.0f", shooterRpm);
         telemetry.addData("Shooter commanded (flywheel RPM)", "%.0f",
