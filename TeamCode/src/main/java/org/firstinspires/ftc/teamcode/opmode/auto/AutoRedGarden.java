@@ -40,8 +40,8 @@ public class AutoRedGarden extends InitOpMode {
                     stopperServo.setPosition(STOPPER_OPEN_POSITION);
                     return false;
                 },
-                // Start intake at 7 seconds; the stopper still opens at 3 seconds.
-                new SleepAction(4.0),
+                // Start intake at 4 seconds; the stopper still opens at 3 seconds.
+                new SleepAction(1.0),
                 packet -> {
                     intakeMotor.setPower(1.0);
                     return false;
