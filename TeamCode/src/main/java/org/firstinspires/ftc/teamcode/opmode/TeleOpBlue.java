@@ -102,7 +102,7 @@ public class TeleOpBlue extends InitOpMode {
                 }
                 rightBumperWasPressed = rightBumperPressed;
 
-                // Controller 2 changes shooter RPM by 250 once per D-pad press.
+                // Controller 2 changes shooter RPM by 100 once per D-pad press.
                 boolean dpadUpPressed = gamepad2.dpad_up;
                 boolean dpadDownPressed = gamepad2.dpad_down;
                 if (dpadUpPressed && !dpadUpWasPressed) {
