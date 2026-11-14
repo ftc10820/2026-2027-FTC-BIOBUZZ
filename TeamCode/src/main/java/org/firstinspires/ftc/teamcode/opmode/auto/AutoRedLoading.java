@@ -45,13 +45,13 @@ public class AutoRedLoading extends InitOpMode {
         Action shooting = new SequentialAction(
                 packet -> {
                     // These commands return immediately, so all three mechanisms move together.
-                    // TeleOp's conversion includes the 2:1 reduction: 2300 shooter RPM = 4600 motor RPM.
+                    // TeleOp's conversion includes the 2:1 reduction: 2400 shooter RPM = 4800 motor RPM.
                     if (shooterMotor != null) {
-                        shooterMotor.setVelocity(2300.0 * 56.0 / 60.0);
+                        shooterMotor.setVelocity(2400.0 * 56.0 / 60.0);
                     }
                     transferMotor.setPower(1.0);
                     // TeleOp's helper applies the turret gearing; negative is clockwise from above.
-                    moveTurretByDegrees(-135.0);
+                    moveTurretByDegrees(-165.0);
                     return false;
                 },
                 new SleepAction(4.0),
@@ -77,7 +77,7 @@ public class AutoRedLoading extends InitOpMode {
                     return false;
                 })
                 // The requested rightward leg also includes a five-inch +X offset.
-                .strafeToConstantHeading(new Vector2d(-45, -24), moveSpeed, MOVE_ACCEL)
+                .strafeToConstantHeading(new Vector2d(-45, -28), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
                 // Half the normal speed cap for this collection leg only.
                 .strafeToConstantHeading(new Vector2d(-55, -24), slowSpeed, MOVE_ACCEL)
