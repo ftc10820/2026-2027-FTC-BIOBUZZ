@@ -17,7 +17,7 @@ public class AutoBlueGarden extends InitOpMode {
         initialize();
 
         // Set the robot's starting position
-        Pose2d initialPose = new Pose2d(63, -12, Math.toRadians(180));
+        Pose2d initialPose = new Pose2d(-12, 63, Math.toRadians(180));
 
         waitForStart();
 
@@ -25,14 +25,14 @@ public class AutoBlueGarden extends InitOpMode {
 
             Action path1 = drive.actionBuilder(initialPose)
                     // TODO: shoot
-                    .splineTo(new Vector2d(58, -63), Math.PI)
+                    .splineToConstantHeading(new Vector2d(-63, 58), Math.PI)
                     // TODO: Intake
-                    .splineTo(new Vector2d(63, -63), Math.PI)
+                    .splineToConstantHeading(new Vector2d(-63, 63), Math.PI)
                     // TODO: off intake
-                    .splineTo(new Vector2d(-63, -63),Math.toRadians(0))
+                    .splineToConstantHeading(new Vector2d(-63, -63),Math.toRadians(0))
                     // TODO: aim
                     // TODO: shoot
-                    .splineTo(new Vector2d(-20, -63), Math.toRadians(0))
+                    .splineToConstantHeading(new Vector2d(-63, -20), Math.toRadians(0))
                     .build();
 
             Actions.runBlocking(path1);
