@@ -79,14 +79,14 @@ public class AutoRedLoading extends InitOpMode {
                 // The requested rightward leg also includes a five-inch +X offset.
                 .strafeToConstantHeading(new Vector2d(-45, -32), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
-                // Half the normal speed cap for this collection leg only.
-                .strafeToConstantHeading(new Vector2d(-55, -24), slowSpeed, MOVE_ACCEL)
+                // Drive straight forward at half speed, holding Y at -32.
+                .strafeToConstantHeading(new Vector2d(-55, -32), slowSpeed, MOVE_ACCEL)
                 .endTrajectory()
                 .waitSeconds(4.0)
-                .strafeToConstantHeading(new Vector2d(-45, -24), moveSpeed, MOVE_ACCEL)
+                .strafeToConstantHeading(new Vector2d(-45, -32), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
                 .build();
-        Action finalStrafe = drive.actionBuilder(new Pose2d(-45, -24, Math.toRadians(180)))
+        Action finalStrafe = drive.actionBuilder(new Pose2d(-45, -32, Math.toRadians(180)))
                 .strafeToConstantHeading(new Vector2d(-45, -58), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
                 .build();
