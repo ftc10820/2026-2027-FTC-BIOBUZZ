@@ -44,7 +44,7 @@ public class AutoRedGarden extends InitOpMode {
                 .endTrajectory()
                 .strafeToConstantHeading(new Vector2d(-24, -42), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
-                .strafeToConstantHeading(new Vector2d(-24, -55), moveSpeed, MOVE_ACCEL)
+                .strafeToConstantHeading(new Vector2d(-24, -60), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
                 .build();
 
