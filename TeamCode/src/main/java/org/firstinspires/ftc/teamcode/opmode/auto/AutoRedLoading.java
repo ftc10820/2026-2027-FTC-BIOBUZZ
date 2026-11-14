@@ -45,9 +45,9 @@ public class AutoRedLoading extends InitOpMode {
         Action approach = drive.actionBuilder(initialPose)
                 .stopAndAdd(packet -> {
                     // Nonblocking commands: spin up and turn the turret as the first drive leg starts.
-                    // 28 motor ticks/rev * 2:1 reduction: 2350 flywheel RPM = 4700 motor RPM.
+                    // 28 motor ticks/rev * 2:1 reduction: 2300 flywheel RPM = 4700 motor RPM.
                     if (shooterMotor != null) {
-                        shooterMotor.setVelocity(2350.0 * 56.0 / 60.0);
+                        shooterMotor.setVelocity(2300.0 * 56.0 / 60.0);
                     }
                     transferMotor.setPower(1.0);
                     moveTurretByDegrees(-160.0);
