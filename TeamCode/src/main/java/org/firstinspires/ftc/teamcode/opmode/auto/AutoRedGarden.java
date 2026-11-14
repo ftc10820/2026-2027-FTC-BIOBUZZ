@@ -79,7 +79,7 @@ public class AutoRedGarden extends InitOpMode {
                     // These commands return immediately, so all three mechanisms move together.
                     // TeleOp's conversion includes the 2:1 reduction: 1800 shooter RPM = 3600 motor RPM.
                     if (shooterMotor != null) {
-                        shooterMotor.setVelocity(PIDConstants.rpmToTicks(1800));
+                        shooterMotor.setVelocity(PIDConstants.rpmToTicks(2250));
                     }
                     transferMotor.setPower(1.0);
                     // TeleOp's helper applies the turret gearing; negative is clockwise from above.
@@ -115,7 +115,22 @@ public class AutoRedGarden extends InitOpMode {
         drive.localizer.setPose(initialPose);
 
         try {
-            Actions.runBlocking(packet -> opModeIsActive() && auto.run(packet));
+            Actions.runBlocking(packet -> {
+                if (!opModeIsActive()) {
+                    return false;
+                }
+                boolean running = auto.run(packet);
+                if (shooterMotor != null) {
+                    // 28 encoder ticks per motor turn * 2 motor turns per flywheel turn.
+                    double shooterRpm = shooterMotor.getVelocity() * 60.0 / 56.0;
+                    telemetry.addData("Shooter RPM", "%.0f", shooterRpm);
+                    packet.put("Shooter RPM", shooterRpm);
+                } else {
+                    telemetry.addData("Shooter RPM", "Unavailable");
+                }
+                telemetry.update();
+                return running;
+            });
         } finally {
             drive.setDrivePowers(new PoseVelocity2d(new Vector2d(0, 0), 0));
             intakeMotor.setPower(0.0);
