@@ -53,9 +53,9 @@ public class AutoRedLoading extends InitOpMode {
         Action shooting = new SequentialAction(
                 packet -> {
                     // These commands return immediately, so all three mechanisms move together.
-                    // TeleOp's conversion includes the 2:1 reduction: 2400 shooter RPM = 4800 motor RPM.
+                    // TeleOp's conversion includes the 2:1 reduction: 2300 shooter RPM = 4600 motor RPM.
                     if (shooterMotor != null) {
-                        shooterMotor.setVelocity(2400.0 * 56.0 / 60.0);
+                        shooterMotor.setVelocity(2300.0 * 56.0 / 60.0);
                     }
                     transferMotor.setPower(1.0);
                     // TeleOp's helper applies the turret gearing; negative is clockwise from above.
@@ -80,7 +80,6 @@ public class AutoRedLoading extends InitOpMode {
             if (autoTimer.seconds() >= 7.0) {
                 intakeMotor.setPower(0.0);
                 drive.setDrivePowers(new PoseVelocity2d(new Vector2d(0, 0), 0));
-                flowerRampServo.setPosition(0.0);
                 return false;
             }
             openingActions.run(packet);
@@ -97,7 +96,7 @@ public class AutoRedLoading extends InitOpMode {
                     return false;
                 })
                 // Half the normal speed cap for this collection leg only.
-                .strafeToConstantHeading(new Vector2d(-53, -24), slowSpeed, MOVE_ACCEL)
+                .strafeToConstantHeading(new Vector2d(-55, -24), slowSpeed, MOVE_ACCEL)
                 .endTrajectory()
                 .waitSeconds(3.0)
                 .strafeToConstantHeading(new Vector2d(-45, -24), moveSpeed, MOVE_ACCEL)
@@ -105,7 +104,15 @@ public class AutoRedLoading extends InitOpMode {
                 .strafeToConstantHeading(new Vector2d(-45, -57), moveSpeed, MOVE_ACCEL)
                 .endTrajectory()
                 .build();
-        Action auto = new SequentialAction(opening, collection);
+        // Lower the ramp at eight seconds without delaying the collection route.
+        Action lowerRamp = packet -> {
+            if (autoTimer.seconds() < 8.0) {
+                return true;
+            }
+            flowerRampServo.setPosition(0.0);
+            return false;
+        };
+        Action auto = new ParallelAction(new SequentialAction(opening, collection), lowerRamp);
 
         telemetry.addLine("Red Loading: start at (-60, -10), facing -X (180 deg)");
         telemetry.addLine("Gate opens at 3s; intake runs from 4 to 7s; collection route starts at 7s");
