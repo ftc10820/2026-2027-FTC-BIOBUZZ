@@ -65,13 +65,13 @@ public class AutoBlueGarden extends InitOpMode {
                     stopperServo.setPosition(STOPPER_OPEN_POSITION);
                     return false;
                 },
-                // Start intake at 4 seconds; the stopper still opens at 3 seconds.
-                new SleepAction(1.0),
+                // Start intake at 5 seconds; the stopper still opens at 3 seconds.
+                new SleepAction(2.0),
                 packet -> {
                     intakeMotor.setPower(1.0);
                     return false;
                 },
-                // Intake runs from 4 to 6.5 seconds; driving starts immediately afterward.
+                // Intake runs from 5 to 7.5 seconds; driving starts immediately afterward.
                 new SleepAction(2.5),
                 packet -> {
                     intakeMotor.setPower(0.0);
@@ -85,7 +85,7 @@ public class AutoBlueGarden extends InitOpMode {
         Action auto = new SequentialAction(shooting, path);
 
         telemetry.addLine("Blue Garden: start at (-61, 33), facing Y (90 deg)");
-        telemetry.addLine("Drive at 6.5s: (-61, 42) -> (24, 42) -> (24, 55)");
+        telemetry.addLine("Drive at 7.5s: (-61, 42) -> (24, 42) -> (24, 55)");
         telemetry.update();
 
         waitForStart();
