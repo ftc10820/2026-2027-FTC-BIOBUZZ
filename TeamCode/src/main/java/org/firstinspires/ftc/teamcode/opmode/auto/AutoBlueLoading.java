@@ -79,17 +79,17 @@ public class AutoBlueLoading extends InitOpMode {
                     return false;
                 })
                 // Only this forward collection leg uses half the normal speed cap (15 in/s).
-                .strafeToConstantHeading(new Vector2d(55, 25), slowSpeed, MOVE_ACCEL)
+                .strafeToConstantHeading(new Vector2d(57, 25), slowSpeed, MOVE_ACCEL)
                 .endTrajectory()
                 .build();
 
-        // Start the clock only after the first arrival at (55, 25).
+        // Start the clock only after the first arrival at (57, 25).
         Action oscillate = new Action() {
             private long startedNs;
             private boolean started;
-            private boolean towardMinus54 = true;
+            private boolean towardInnerEndpoint = true;
             private Action leg;
-            private Pose2d legStart = new Pose2d(55, 25, Math.toRadians(0));
+            private Pose2d legStart = new Pose2d(57, 25, Math.toRadians(0));
 
             @Override
             public boolean run(TelemetryPacket packet) {
@@ -101,7 +101,7 @@ public class AutoBlueLoading extends InitOpMode {
                     drive.setDrivePowers(new PoseVelocity2d(new Vector2d(0, 0), 0));
                     return false;
                 }
-                double targetX = towardMinus54 ? 54 : 55;
+                double targetX = towardInnerEndpoint ? 56 : 57;
                 if (leg == null) {
                     // Build a fresh action for each pass; completed actions cannot be reused.
                     leg = drive.actionBuilder(legStart)
@@ -111,7 +111,7 @@ public class AutoBlueLoading extends InitOpMode {
                 }
                 if (!leg.run(packet)) {
                     legStart = new Pose2d(targetX, 25, Math.toRadians(0));
-                    towardMinus54 = !towardMinus54;
+                    towardInnerEndpoint = !towardInnerEndpoint;
                     leg = null;
                 }
                 return true;
@@ -152,7 +152,7 @@ public class AutoBlueLoading extends InitOpMode {
         Action auto = new SequentialAction(approach, oscillate, departure);
 
         telemetry.addLine("Blue Loading: start at (58, 38), facing X (-180 deg)");
-        telemetry.addLine("Shoot at (50, 25) for 3s; oscillate between X=55 and 54 at Y=25 for 4.5s; finish at (40, 65)");
+        telemetry.addLine("Shoot at (50, 25) for 3s; oscillate between X=57 and 56 at Y=25 for 4.5s; finish at (40, 65)");
         telemetry.update();
 
         waitForStart();
