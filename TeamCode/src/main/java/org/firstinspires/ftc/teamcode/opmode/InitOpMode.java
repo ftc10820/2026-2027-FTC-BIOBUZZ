@@ -200,7 +200,7 @@ public abstract class InitOpMode extends LinearOpMode {
      * Uses the documented Limelight 3A hardware-map, polling, pipeline, and start calls.
      * @see <a href="https://docs.limelightvision.io/docs/docs-limelight/getting-started/limelight-3a#7-ftc-programming">Limelight 3A FTC example</a>
      */
-    private void initializeLimelight() {
+    protected void initializeLimelight() {
         // The Limelight 3A must be named "limelight" in the robot configuration.
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
         limelight.setPollRateHz(100);
