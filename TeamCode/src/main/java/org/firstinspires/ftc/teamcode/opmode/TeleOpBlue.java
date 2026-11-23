@@ -44,7 +44,6 @@ public class TeleOpBlue extends InitOpMode {
         if (shooterMotor != null) {
             shooterMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
-        initializeTurret();
         updateShooterTelemetry(false, SHOOTER_START_RPM);
 
         boolean shooterRunning = false;
@@ -56,21 +55,11 @@ public class TeleOpBlue extends InitOpMode {
         boolean rightBumperWasPressed = false;
         boolean flowerRampAtPositionHalf = true;
         boolean leftBumperWasPressed = false;
-        int previousTurretDirection = 0;
-        long nextTurretStepTimeNs = 0;
-        boolean grabberOpen = false;
-        boolean grabberXWasPressed = false;
 
         waitForStart();
         if (isStopRequested()) {
             return;
         }
-
-        // Reapply the initial position on START as well as during INIT.
-        grabberServo.setPosition(GRABBER_INIT_POSITION);
-        grabberOpen = false;
-        // Require a fresh X press so a held button cannot immediately reopen it.
-        grabberXWasPressed = gamepad2.x;
 
         while (opModeIsActive()) {
             try {
@@ -137,33 +126,6 @@ public class TeleOpBlue extends InitOpMode {
                 }
                 leftBumperWasPressed = leftBumperPressed;
 
-                // Gamepad 2: proportional slide power, left trigger up and right trigger down.
-                // Releasing both triggers stops the motor; equal presses cancel each other.
-                slideMotor.setPower(gamepad2.left_trigger - gamepad2.right_trigger);
-
-                // Toggle grabber once per X press, even when the button is held.
-                boolean grabberXPressed = gamepad2.x;
-                if (grabberXPressed && !grabberXWasPressed) {
-                    grabberOpen = !grabberOpen;
-                    grabberServo.setPosition(grabberOpen ? 0.5 : GRABBER_CLOSED_POSITION);
-                }
-                grabberXWasPressed = grabberXPressed;
-
-                // Step immediately, then every 100 ms while held. Opposite inputs cancel.
-                int turretDirection = (gamepad2.dpad_left ? 1 : 0)
-                        - (gamepad2.dpad_right ? 1 : 0);
-                if (turretDirection != previousTurretDirection) {
-                    nextTurretStepTimeNs = 0;
-                }
-                long nowNs = System.nanoTime();
-                if (turretDirection != 0 && nowNs >= nextTurretStepTimeNs) {
-                    if (Math.abs(turretTargetDegrees + turretDirection * TURRET_STEP_DEGREES)
-                            <= TURRET_MAX_ANGLE_DEGREES) {
-                        moveTurretByDegrees(turretDirection * TURRET_STEP_DEGREES);
-                    }
-                    nextTurretStepTimeNs = nowNs + TURRET_REPEAT_INTERVAL_NS;
-                }
-                previousTurretDirection = turretDirection;
                 updateShooterTelemetry(shooterRunning, shooterRpm);
             } catch (Exception e) {
               handleExpection(e);
@@ -175,7 +137,6 @@ public class TeleOpBlue extends InitOpMode {
         drive.leftBack.setPower(0.0);
         drive.rightBack.setPower(0.0);
         intakeMotor.setPower(0.0);
-        slideMotor.setPower(0.0);
         stopperServo.setPosition(STOPPER_CLOSED_POSITION);
         transferMotor.setPower(0.0);
         if (shooterMotor != null) {
@@ -185,7 +146,6 @@ public class TeleOpBlue extends InitOpMode {
 
     private void updateShooterTelemetry(boolean shooterRunning, double shooterRpm) {
         telemetry.clearAll();
-        telemetry.addData("Turret target (deg, +left / -right)", "%.0f", turretTargetDegrees);
         telemetry.addData("Shooter / transfer", shooterRunning ? "On" : "Off");
         telemetry.addData("Shooter selected (flywheel RPM)", "%.0f", shooterRpm);
         telemetry.addData("Shooter commanded (flywheel RPM)", "%.0f",

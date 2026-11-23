@@ -15,11 +15,6 @@ public abstract class TestBaseOpMode extends InitOpMode {
     protected double goalPositionY = FRONT_GOAL_Y;
     protected double goalPositionX = RED_GOAL_X;
     protected double targetVelocity = PIDConstants.SHOOTER_IDLE_VELOCITY;
-    protected double targetTurretAngle = 0d;
-
-    protected boolean isAimed() {
-        return (Math.floor(1000*targetTurretAngle/getTurretRotation()) < 10);
-    }
 
     protected boolean isAtSpeed() {
         return (Math.floor(1000*targetVelocity/shooterMotor.getVelocity()) <= 10);
@@ -44,14 +39,6 @@ public abstract class TestBaseOpMode extends InitOpMode {
         }
     }
 
-    protected double getTurretRotation() {
-        // TODO: Find angle between current pose and goal
-        // goalPositionX, goalPositionY
-        // drive.localizer.getPose()
-        // TODO: Translate the angle to turret servo position
-        return targetTurretAngle;
-    }
-
     protected double calculateRpmForDistance() {
         // TODO: Calculate distance between current pose and goal
         // goalPositionX, goalPositionY
@@ -61,8 +48,8 @@ public abstract class TestBaseOpMode extends InitOpMode {
     }
 
     protected void updateShooter() {
-        // If there are balls loaded and we're currently aimed, set shooter speed
-        if (!isEmpty() && isAimed()) {
+        // If there are balls loaded, set shooter speed.
+        if (!isEmpty()) {
             targetVelocity = PIDConstants.rpmToTicks(calculateRpmForDistance());
         }
         shooterMotor.setVelocity(targetVelocity);

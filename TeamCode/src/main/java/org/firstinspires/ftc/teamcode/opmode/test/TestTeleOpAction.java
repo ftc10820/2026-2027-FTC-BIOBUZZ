@@ -16,8 +16,6 @@
 // import com.qualcomm.robotcore.hardware.DcMotorEx;
 // import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 // import com.qualcomm.robotcore.hardware.Servo;
-// import com.qualcomm.robotcore.hardware.ServoImplEx;
-// import com.qualcomm.robotcore.hardware.PwmControl;
 // import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 //
 // import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -46,32 +44,14 @@
 //
 //     protected static final double STOPPER_CLOSED_POSITION = 0.0;
 //     protected static final double STOPPER_OPEN_POSITION = 0.2;
-//     protected static final double GRABBER_INIT_POSITION = 0.1;
-//     protected static final double GRABBER_CLOSED_POSITION = 0.12;
 //     // Shooter shaft RPM; the 2:1 reduction means 1750 here commands 3500 motor RPM.
 //     protected static final double SHOOTER_START_RPM = 1750.0;
 //     protected static final double SHOOTER_RPM_STEP = 250.0;
 //     protected static final double SHOOTER_MIN_RPM = 250.0;
 //     protected static final long SHOOTER_RPM_SAMPLE_INTERVAL_NS = 1_000_000_000L;
 //
-//     // Stock goBILDA 3208-0004-0001 turret: 2.75 servo turns per turret turn.
-//     // https://www.gobilda.com/gear-driven-turret-2-75-1-ratio-105mm-id/
-//     protected static final double TURRET_STEP_DEGREES = 10.0;
-//     // Eighteen 10-degree steps from center in either direction.
-//     protected static final double TURRET_MAX_ANGLE_DEGREES = 180.0;
-//     protected static final long TURRET_REPEAT_INTERVAL_NS = 100_000_000L;
-//     private static final double TURRET_GEAR_RATIO = 2.75;
-//     // 2000-0025-0502 in its default positional mode: 1800 degrees at 500–2500 us.
-//     // https://www.gobilda.com/2000-series-5-turn-dual-mode-servo-25-2-torque/
-//     private static final double TURRET_SERVO_TRAVEL_DEGREES = 1800.0;
-//     private static final double TURRET_CENTER_POSITION = 0.5;
-//     protected double turretTargetDegrees = 0.0;
-//     private ServoImplEx turretServo;
-//
 //     protected DcMotor intakeMotor;
 //     protected DcMotor transferMotor;
-//     protected DcMotor slideMotor;
-//     protected Servo grabberServo;
 //     protected Servo flowerRampServo;
 //     protected Servo stopperServo;
 //     public MecanumDrive drive;
@@ -104,16 +84,6 @@
 //         flowerRampServo = hardwareMap.get(Servo.class, "flowerRampServo");
 //         flowerRampServo.setPosition(0.5);
 //
-//         grabberServo = hardwareMap.get(Servo.class, "grabberServo");
-//         grabberServo.setPosition(GRABBER_INIT_POSITION);
-//
-//         slideMotor = hardwareMap.get(DcMotor.class, "slideMotor");
-//         slideMotor.setPower(0.0);
-//         // Positive power raises the slide; reverse this direction if needed for the mechanism.
-//         slideMotor.setDirection(DcMotor.Direction.FORWARD);
-//         slideMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-//         slideMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-//
 //         shooterMotor = hardwareMap.tryGet(DcMotorEx.class, "shooterMotor");
 //         if (shooterMotor != null) {
 //             shooterMotor.setPower(0.0);
@@ -132,44 +102,6 @@
 //         // initializeLimelight();
 //         telemetry.update();
 //
-//     }
-//
-//     /**
-//      * Called by TeleOp before waitForStart(). Configure the connected Hub servo port
-//      * as "turretServo". Mechanically align the turret forward at position 0.5.
-//      */
-//     protected void initializeTurret() {
-//         turretServo = hardwareMap.get(ServoImplEx.class, "turretServo");
-//         turretServo.setDirection(Servo.Direction.FORWARD);
-//         turretServo.setPwmRange(new PwmControl.PwmRange(500.0, 2500.0));
-//         turretTargetDegrees = 0.0;
-//         turretServo.setPosition(TURRET_CENTER_POSITION);
-//         telemetry.addData("Turret target (deg, +left)", turretTargetDegrees);
-//         telemetry.update();
-//     }
-//
-//     /**
-//      * Positive angles turn the turret left (counterclockwise viewed from above).
-//      * Increasing PWM turns the upright servo clockwise; the external gears reverse
-//      * that into counterclockwise turret motion. Never wrap around at a travel limit.
-//      */
-//     protected void moveTurretByDegrees(double deltaDegrees) {
-//         if (deltaDegrees == 0.0) {
-//             return;
-//         }
-//         double nextTargetDegrees = turretTargetDegrees + deltaDegrees;
-//         if (Math.abs(nextTargetDegrees) > TURRET_MAX_ANGLE_DEGREES) {
-//             telemetry.log().add("Turret limit: 180 degrees from center");
-//             return;
-//         }
-//         double nextPosition = TURRET_CENTER_POSITION
-//                 + nextTargetDegrees * TURRET_GEAR_RATIO / TURRET_SERVO_TRAVEL_DEGREES;
-//         if (nextPosition < 0.0 || nextPosition > 1.0) {
-//             telemetry.log().add("Turret travel limit: cannot take another 10-degree step");
-//             return;
-//         }
-//         turretServo.setPosition(nextPosition);
-//         turretTargetDegrees = nextTargetDegrees;
 //     }
 //
 //     //region Limelight 3A
