@@ -40,7 +40,15 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 public class TeleOpBlue extends InitOpMode {
     @Override
     public void runOpMode() {
-        initialize();
+        initializeTurretTeleOp(PIPE_BLUE_HIVE);
+        try {
+            runDriverControls();
+        } finally {
+            stopTurretTeleOp();
+        }
+    }
+
+    private void runDriverControls() {
         if (shooterMotor != null) {
             shooterMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
@@ -74,7 +82,10 @@ public class TeleOpBlue extends InitOpMode {
                 lateral = Math.pow(lateral,3);
                 yaw = Math.pow(yaw,3);
 
-                drive.setDrivePowers(new PoseVelocity2d(new Vector2d(axial, lateral), yaw));
+                drive.setDrivePowers(new PoseVelocity2d(new Vector2d(
+                        Double.isFinite(axial) ? axial : 0.0,
+                        Double.isFinite(lateral) ? lateral : 0.0),
+                        Double.isFinite(yaw) ? yaw : 0.0));
 
                 // Hold left trigger to reverse or right trigger to run forward; reverse has priority.
                 if (gamepad1.left_trigger > 0.0)
@@ -126,6 +137,7 @@ public class TeleOpBlue extends InitOpMode {
                 }
                 leftBumperWasPressed = leftBumperPressed;
 
+                updateTurretTracking();
                 updateShooterTelemetry(shooterRunning, shooterRpm);
             } catch (Exception e) {
               handleExpection(e);
@@ -157,6 +169,7 @@ public class TeleOpBlue extends InitOpMode {
         } else {
             telemetry.addData("Shooter RPM", "Unavailable");
         }
+        addTurretTelemetry();
         telemetry.update();
     }
 }
