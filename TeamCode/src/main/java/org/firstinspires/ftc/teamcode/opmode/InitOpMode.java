@@ -25,8 +25,8 @@ public abstract class InitOpMode extends LinearOpMode {
 
     protected static final double STOPPER_CLOSED_POSITION = 0.0;
     protected static final double STOPPER_OPEN_POSITION = 0.2;
-    // Shooter shaft RPM; the 2:1 reduction means 2400 here commands 4800 motor RPM.
-    protected static final double SHOOTER_START_RPM = 2400.0;
+    // Flywheel RPM. The 2:1 reduction means 2200 at the flywheel commands 4400 motor RPM.
+    protected static final double SHOOTER_START_RPM = 2200.0;
     protected static final double SHOOTER_RPM_STEP = 50.0;
     protected static final double SHOOTER_MIN_RPM = 250.0;
     protected static final long SHOOTER_RPM_SAMPLE_INTERVAL_NS = 1_000_000_000L;
