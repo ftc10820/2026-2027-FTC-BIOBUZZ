@@ -169,15 +169,11 @@ public class TeleOpRed extends InitOpMode {
     private void updateShooterTelemetry(boolean shooterRunning, double shooterRpm) {
         telemetry.clearAll();
         telemetry.addData("Shooter / transfer", shooterRunning ? "On" : "Off");
-        telemetry.addData("Shooter selected (flywheel RPM)", "%.0f", shooterRpm);
-        telemetry.addData("Shooter commanded (flywheel RPM)", "%.0f",
-                shooterRunning ? shooterRpm : 0.0);
-        telemetry.addData("G2 shooter D-pad", "up=%s down=%s",
-                gamepad2.dpad_up, gamepad2.dpad_down);
+        telemetry.addData("Shooter target speed", "%.0f RPM", shooterRpm);
         if (shooterMotor != null) {
-            telemetry.addData("Shooter RPM", "%.0f", shooterMotor.getVelocity() * 60.0 / 56.0);
+            telemetry.addData("Shooter speed", "%.0f RPM", shooterMotor.getVelocity() * 60.0 / 56.0);
         } else {
-            telemetry.addData("Shooter RPM", "Unavailable");
+            telemetry.addData("Shooter speed", "Unavailable");
         }
         addTurretTelemetry();
         telemetry.update();

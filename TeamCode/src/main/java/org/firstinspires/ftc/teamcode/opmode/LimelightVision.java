@@ -137,7 +137,8 @@ final class LimelightVision {
         } else if (active < 0 && !switchAccepted) {
             telemetry.addLine("Warning: Limelight pipeline switch failed");
         }
-        telemetry.addData("Tag seen", tagIds.isEmpty() ? "No" : "Yes");
+        telemetry.addData("April Tags Detected", tagIds.isEmpty()
+                ? "No april tags detected" : "April tags detected");
         telemetry.addData("Tag IDs", tagIds.isEmpty() ? "None" : tagIds);
         if (target != null) {
             telemetry.addData("Aim tag", target.getFiducialId());

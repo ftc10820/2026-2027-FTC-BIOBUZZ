@@ -88,7 +88,6 @@ public abstract class InitOpMode extends LinearOpMode {
         // Based on the forward test; verify each name maps to the correct physical wheel.
 
         System.out.println("Drive motors initialized");
-        telemetry.addLine("Drive motors initialized");
         vision = new LimelightVision(hardwareMap.tryGet(Limelight3A.class, LIMELIGHT_NAME), pipeline);
         vision.addTelemetry(telemetry);
         telemetry.update();
